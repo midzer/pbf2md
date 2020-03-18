@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-  f, err := os.Open("hamburg-latest.osm.pbf")
+  f, err := os.Open("germany-latest.osm.pbf")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,18 +30,18 @@ func main() {
 	}
 	// Index template
 	const indexTmpl = `---
-title: "{{ .city }}"
+title: {{ .city }}
 ---
 `
 	indexTemplate := template.Must(template.New("index").Parse(indexTmpl))
 	
 	// Markdown template
 	const mdTmpl = `---
-title: "{{ .name }}"
+title: {{ .name }}
 postcode: {{ .postcode }}
 city: {{ .city }}
-street: "{{ .street }}"
-housenumber: "{{ .housenumber }}"
+street: {{ .street }}
+housenumber: {{ .housenumber }}
 phone: "{{ .phone }}"
 opening_hours: "{{ .opening_hours }}"
 website: "{{ .website }}"
