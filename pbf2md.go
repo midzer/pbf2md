@@ -66,10 +66,10 @@ longitude: {{ .longitude }}
 					if val == "turkish" || val == "kebab" {
 						if city, ok := tags["addr:city"]; ok {
 							// Create directory
-							err = os.MkdirAll(slug.Make(city), 0755)
+							err = os.MkdirAll(slug.MakeLang(city, "de"), 0755)
 
 							// Create index file
-							f, err := os.Create(slug.Make(city) + "/_index.md")
+							f, err := os.Create(slug.MakeLang(city, "de") + "/_index.md")
 							if err != nil {
 								fmt.Println(err)
 								return
@@ -83,7 +83,7 @@ longitude: {{ .longitude }}
 							f.Close()
 
 							// Create element file
-							f, err = os.Create(slug.Make(city) + "/" + slug.MakeLang(tags["name"], "de") + ".md")
+							f, err = os.Create(slug.MakeLang(city, "de") + "/" + slug.MakeLang(tags["name"], "de") + ".md")
 							if err != nil {
 								fmt.Println(err)
 								return
