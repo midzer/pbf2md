@@ -30,11 +30,14 @@ func main() {
 	}
 	// Create content and data directory
 	err = os.MkdirAll("content", 0755)
+	err = os.MkdirAll("content/cities", 0755)
 	err = os.MkdirAll("data", 0755)
+	err = os.MkdirAll("data/cities", 0755)
 
 	// Index template
 	const indexTmpl = `---
 title: {{ .city }}
+url: "{{ .url }}"
 ---
 `
 	indexTemplate := template.Must(template.New("index").Parse(indexTmpl))
@@ -42,6 +45,7 @@ title: {{ .city }}
 	// Markdown template
 	const mdTmpl = `---
 title: {{ .name }}
+url: "{{ .url }}"
 ---
 `
 	mdTemplate := template.Must(template.New("markdown").Parse(mdTmpl))
@@ -75,17 +79,19 @@ website: "{{ .website }}"
 					if val == "turkish" || val == "kebab" {
 						if city, ok := tags["addr:city"]; ok {
 							// 1. content
+							citySlug := slug.MakeLang(city, "de")
 							// Create directory
-							err = os.MkdirAll("content/" + slug.MakeLang(city, "de"), 0755)
+							err = os.MkdirAll("content/cities/" + citySlug, 0755)
 
 							// Create index file
-							f, err := os.Create("content/" + slug.MakeLang(city, "de") + "/_index.md")
+							f, err := os.Create("content/cities/" + citySlug + "/_index.md")
 							if err != nil {
 								fmt.Println(err)
 								return
 							}
 							data := map[string]interface{} {
 								"city": tags["addr:city"],
+								"url":  "/" + citySlug + "/",
 							}
 							if err := indexTemplate.Execute(f, data); err != nil {
 									panic(err)
@@ -93,13 +99,15 @@ website: "{{ .website }}"
 							f.Close()
 
 							// Create element file
-							f, err = os.Create("content/" + slug.MakeLang(city, "de") + "/" + slug.MakeLang(tags["name"], "de") + ".md")
+							nameSlug := slug.MakeLang(tags["name"], "de")
+							f, err = os.Create("content/cities/" + citySlug + "/" + nameSlug + ".md")
 							if err != nil {
 								fmt.Println(err)
 								return
 							}
 							data = map[string]interface{} {
-								"name":          tags["name"],
+								"name": tags["name"],
+								"url":  "/" + citySlug + "/" + nameSlug + "/",
 							}
 							if err := mdTemplate.Execute(f, data); err != nil {
 									panic(err)
@@ -108,10 +116,10 @@ website: "{{ .website }}"
 
 							// 2. data
 							// Create directory
-							err = os.MkdirAll("data/" + slug.MakeLang(city, "de"), 0755)
+							err = os.MkdirAll("data/cities/" + citySlug, 0755)
 
 							// Create element file
-							f, err = os.Create("data/" + slug.MakeLang(city, "de") + "/" + slug.MakeLang(tags["name"], "de") + ".yml")
+							f, err = os.Create("data/cities/" + citySlug + "/" + nameSlug + ".yml")
 							if err != nil {
 								fmt.Println(err)
 								return
