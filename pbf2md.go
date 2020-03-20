@@ -28,6 +28,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Create content and data directory
+	err = os.MkdirAll("content", 0755)
+	err = os.MkdirAll("data", 0755)
+
 	// Index template
 	const indexTmpl = `---
 title: {{ .city }}
@@ -38,6 +42,14 @@ title: {{ .city }}
 	// Markdown template
 	const mdTmpl = `---
 title: {{ .name }}
+---
+`
+	mdTemplate := template.Must(template.New("markdown").Parse(mdTmpl))
+	
+	// data template
+	const dataTmpl = `id: {{ .id }}
+latitude: {{ .latitude }}
+longitude: {{ .longitude }}
 postcode: {{ .postcode }}
 city: {{ .city }}
 street: {{ .street }}
@@ -45,11 +57,8 @@ housenumber: {{ .housenumber }}
 phone: "{{ .phone }}"
 opening_hours: "{{ .opening_hours }}"
 website: "{{ .website }}"
-latitude: {{ .latitude }}
-longitude: {{ .longitude }}
----
 `
-  mdTemplate := template.Must(template.New("markdown").Parse(mdTmpl))
+  dataTemplate := template.Must(template.New("data").Parse(dataTmpl))
 
 	var nc, wc, rc uint64
 	for {
@@ -65,11 +74,12 @@ longitude: {{ .longitude }}
 				if val, ok := tags["cuisine"]; ok {
 					if val == "turkish" || val == "kebab" {
 						if city, ok := tags["addr:city"]; ok {
+							// 1. content
 							// Create directory
-							err = os.MkdirAll(slug.MakeLang(city, "de"), 0755)
+							err = os.MkdirAll("content/" + slug.MakeLang(city, "de"), 0755)
 
 							// Create index file
-							f, err := os.Create(slug.MakeLang(city, "de") + "/_index.md")
+							f, err := os.Create("content/" + slug.MakeLang(city, "de") + "/_index.md")
 							if err != nil {
 								fmt.Println(err)
 								return
@@ -83,13 +93,33 @@ longitude: {{ .longitude }}
 							f.Close()
 
 							// Create element file
-							f, err = os.Create(slug.MakeLang(city, "de") + "/" + slug.MakeLang(tags["name"], "de") + ".md")
+							f, err = os.Create("content/" + slug.MakeLang(city, "de") + "/" + slug.MakeLang(tags["name"], "de") + ".md")
 							if err != nil {
 								fmt.Println(err)
 								return
 							}
 							data = map[string]interface{} {
 								"name":          tags["name"],
+							}
+							if err := mdTemplate.Execute(f, data); err != nil {
+									panic(err)
+							}
+							f.Close()
+
+							// 2. data
+							// Create directory
+							err = os.MkdirAll("data/" + slug.MakeLang(city, "de"), 0755)
+
+							// Create element file
+							f, err = os.Create("data/" + slug.MakeLang(city, "de") + "/" + slug.MakeLang(tags["name"], "de") + ".yml")
+							if err != nil {
+								fmt.Println(err)
+								return
+							}
+							data = map[string]interface{} {
+								"id":            v.ID,
+								"latitude":      v.Lat,
+								"longitude":     v.Lon,
 								"postcode":      tags["addr:postcode"],
 								"city":          tags["addr:city"],
 								"street":        tags["addr:street"],
@@ -97,11 +127,9 @@ longitude: {{ .longitude }}
 								"phone":         tags["phone"],
 								"opening_hours": tags["opening_hours"],
 								"website":       tags["website"],
-								"latitude":      v.Lat,
-								"longitude":     v.Lon,
 							}
-							if err := mdTemplate.Execute(f, data); err != nil {
-									panic(err)
+							if err := dataTemplate.Execute(f, data); err != nil {
+								panic(err)
 							}
 							f.Close()
 						}
