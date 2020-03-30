@@ -75,72 +75,74 @@ website: "{{ .website }}"
 			case *osmpbf.Node:
 				// Process Node v.
 				tags := v.Tags
-				if val, ok := tags["cuisine"]; ok {
-					if val == "turkish" || val == "kebab" {
-						if city, ok := tags["addr:city"]; ok {
-							// 1. content
-							citySlug := slug.MakeLang(city, "de")
-							// Create directory
-							err = os.MkdirAll("content/cities/" + citySlug, 0755)
+				cuisine := tags["cuisine"]
+				if cuisine == "turkish" || cuisine == "kebab" {
+					city := tags["addr:city"]
+					name := tags["name"]
+					if city != "" && name != "" {
+						citySlug := slug.MakeLang(city, "de")
+						nameSlug := slug.MakeLang(name, "de")
 
-							// Create index file
-							f, err := os.Create("content/cities/" + citySlug + "/_index.md")
-							if err != nil {
-								fmt.Println(err)
-								return
-							}
-							data := map[string]interface{} {
-								"city": tags["addr:city"],
-								"url":  "/" + citySlug + "/",
-							}
-							if err := indexTemplate.Execute(f, data); err != nil {
-									panic(err)
-							}
-							f.Close()
+						// 1. content
+						// Create directory
+						err = os.MkdirAll("content/cities/" + citySlug, 0755)
 
-							// Create element file
-							nameSlug := slug.MakeLang(tags["name"], "de")
-							f, err = os.Create("content/cities/" + citySlug + "/" + nameSlug + ".md")
-							if err != nil {
-								fmt.Println(err)
-								return
-							}
-							data = map[string]interface{} {
-								"name": tags["name"],
-								"url":  "/" + citySlug + "/" + nameSlug + "/",
-							}
-							if err := mdTemplate.Execute(f, data); err != nil {
-									panic(err)
-							}
-							f.Close()
-
-							// 2. data
-							// Create directory
-							err = os.MkdirAll("data/cities/" + citySlug, 0755)
-
-							// Create element file
-							f, err = os.Create("data/cities/" + citySlug + "/" + nameSlug + ".yml")
-							if err != nil {
-								fmt.Println(err)
-								return
-							}
-							data = map[string]interface{} {
-								"id":            v.ID,
-								"latitude":      v.Lat,
-								"longitude":     v.Lon,
-								"postcode":      tags["addr:postcode"],
-								"city":          tags["addr:city"],
-								"street":        tags["addr:street"],
-								"housenumber":   tags["addr:housenumber"],
-								"phone":         tags["phone"],
-								"opening_hours": tags["opening_hours"],
-								"website":       tags["website"],
-							}
-							if err := dataTemplate.Execute(f, data); err != nil {
-								panic(err)
-							}
-							f.Close()
+						// Create index file
+						f, err := os.Create("content/cities/" + citySlug + "/_index.md")
+						if err != nil {
+							fmt.Println(err)
+							return
 						}
+						data := map[string]interface{} {
+							"city": city,
+							"url":  "/" + citySlug + "/",
+						}
+						if err := indexTemplate.Execute(f, data); err != nil {
+								panic(err)
+						}
+						f.Close()
+
+						// Create element file
+						f, err = os.Create("content/cities/" + citySlug + "/" + nameSlug + ".md")
+						if err != nil {
+							fmt.Println(err)
+							return
+						}
+						data = map[string]interface{} {
+							"name": name,
+							"url":  "/" + citySlug + "/" + nameSlug + "/",
+						}
+						if err := mdTemplate.Execute(f, data); err != nil {
+								panic(err)
+						}
+						f.Close()
+
+						// 2. data
+						// Create directory
+						err = os.MkdirAll("data/cities/" + citySlug, 0755)
+
+						// Create element file
+						f, err = os.Create("data/cities/" + citySlug + "/" + nameSlug + ".yml")
+						if err != nil {
+							fmt.Println(err)
+							return
+						}
+						data = map[string]interface{} {
+							"id":            v.ID,
+							"latitude":      v.Lat,
+							"longitude":     v.Lon,
+							"postcode":      tags["addr:postcode"],
+							"city":          city,
+							"street":        tags["addr:street"],
+							"housenumber":   tags["addr:housenumber"],
+							"phone":         tags["phone"],
+							"opening_hours": tags["opening_hours"],
+							"website":       tags["website"],
+						}
+						if err := dataTemplate.Execute(f, data); err != nil {
+							panic(err)
+						}
+						f.Close()
 					}
 				}
 				nc++
