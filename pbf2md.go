@@ -72,7 +72,7 @@ url: {{ .url }}
 	}
 }
 
-func createElementFile(citySlug string, shopSlug string, nameSlug string, name string, elementType string, shop string) {
+func createElementFile(citySlug string, shopSlug string, nameSlug string, name string) {
 	elementFile := "content/cities/" + citySlug + "/" + shopSlug + "/" + nameSlug + ".md"
 	if fileExists(elementFile) {
 		var re = regexp.MustCompile(`\d+$`)
@@ -95,14 +95,10 @@ func createElementFile(citySlug string, shopSlug string, nameSlug string, name s
 	data := map[string]interface{} {
 		"title": strings.Replace(name, "\"", "", -1),
 		"url":  "/" + citySlug + "/" + shopSlug + "/" + nameSlug + "/",
-		"type": elementType,
-		"categories": shop,
 	}
 	const mdTmpl = `---
 title: "{{ .title }}"
 url: {{ .url }}
-type: {{ .type }}
-categories: ['{{ .categories }}']
 ---
 `
 	mdTemplate := template.Must(template.New("markdown").Parse(mdTmpl))
@@ -112,7 +108,7 @@ categories: ['{{ .categories }}']
 	f.Close()
 }
 
-func createDataElementFile(citySlug string, nameSlug string, shopSlug string, id int64, lat float64, lon float64, tags map[string]string, city string) {
+func createDataElementFile(citySlug string, nameSlug string, shopSlug string, id int64, elementType string, lat float64, lon float64, tags map[string]string, city string) {
 	elementFile := "data/cities/" + citySlug + "/" + nameSlug + "/" + shopSlug + ".yml"
 	if fileExists(elementFile) {
 		var re = regexp.MustCompile(`\d+$`)
@@ -134,6 +130,7 @@ func createDataElementFile(citySlug string, nameSlug string, shopSlug string, id
 	}
 	data := map[string]interface{} {
 		"id":            id,
+		"type":          elementType,
 		"latitude":      lat,
 		"longitude":     lon,
 		"postcode":      tags["addr:postcode"],
@@ -145,6 +142,7 @@ func createDataElementFile(citySlug string, nameSlug string, shopSlug string, id
 		"website":       strings.Replace(tags["website"], "\"", "", -1),
 	}
 	const dataTmpl = `id: {{ .id }}
+type: {{ .type }}
 latitude: {{ .latitude }}
 longitude: {{ .longitude }}
 postcode: {{ .postcode }}
@@ -410,7 +408,7 @@ func translateShop(shop string) string {
 }
 
 func main() {
-  f, err := os.Open("bremen-latest.osm.pbf")
+  f, err := os.Open("oberbayern-latest.osm.pbf")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -450,12 +448,12 @@ func main() {
 					err = os.MkdirAll("content/cities/" + citySlug + "/" + shopSlug, 0755)
 					createIndexFile(citySlug, city)
 					createIndexShopFile(citySlug, shopSlug, shop)
-					createElementFile(citySlug, shopSlug, nameSlug, name, "node", shop)
+					createElementFile(citySlug, shopSlug, nameSlug, name)
 					
 
 					// 2. data
 					err = os.MkdirAll("data/cities/" + citySlug + "/" + shopSlug, 0755)
-					createDataElementFile(citySlug, shopSlug, nameSlug, v.ID, v.Lat, v.Lon, tags, city)
+					createDataElementFile(citySlug, shopSlug, nameSlug, v.ID, "node", v.Lat, v.Lon, tags, city)
 				}
 				nc++
 			case *osmpbf.Way:
@@ -474,7 +472,7 @@ func main() {
 					err = os.MkdirAll("content/cities/" + citySlug + "/" + shopSlug, 0755)
 					createIndexFile(citySlug, city)
 					createIndexShopFile(citySlug, shopSlug, shop)
-					createElementFile(citySlug, shopSlug, nameSlug, name, "way", shop)
+					createElementFile(citySlug, shopSlug, nameSlug, name)
 
 					// 2. data
 					err = os.MkdirAll("data/cities/" + citySlug + "/" + shopSlug, 0755)
@@ -495,7 +493,7 @@ func main() {
 							}
 						}
 					}
-					createDataElementFile(citySlug, shopSlug, nameSlug, v.ID, lat, lon, tags, city)
+					createDataElementFile(citySlug, shopSlug, nameSlug, v.ID, "way", lat, lon, tags, city)
 				}
 				wc++
 			case *osmpbf.Relation:
