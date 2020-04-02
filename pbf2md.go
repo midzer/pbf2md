@@ -14,6 +14,11 @@ import (
 	"github.com/gosimple/slug"
 )
 
+type LatLon struct {
+	lat float64
+	lon float64
+}
+
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
@@ -586,6 +591,8 @@ func main() {
 
 	d := osmpbf.NewDecoder(f)
 
+	m := make(map[int64]LatLon)
+
 	// use more memory from the start, it is faster
 	d.SetBufferSize(osmpbf.MaxBlobSize)
 
@@ -622,6 +629,7 @@ func main() {
 					err = os.MkdirAll("data/cities/" + citySlug, 0755)
 					createDataElementFile(citySlug, nameSlug, v.ID, "node", shop, v.Lat, v.Lon, tags, city)
 				}
+				m[v.ID] = LatLon{v.Lat, v.Lon}
 				nc++
 			case *osmpbf.Way:
 				// Process Way v.
@@ -641,24 +649,8 @@ func main() {
 
 					// 2. data
 					err = os.MkdirAll("data/cities/" + citySlug, 0755)
-					var lat, lon float64
-					for {
-						if w, err := d.Decode(); err == io.EOF {
-							break
-						} else if err != nil {
-							log.Fatal(err)
-						} else {
-							switch w := w.(type) {
-							case *osmpbf.Node:
-								if v.NodeIDs[0] == w.ID {
-									lat = w.Lat
-									lon = w.Lon
-									break
-								}
-							}
-						}
-					}
-					createDataElementFile(citySlug, nameSlug, v.ID, "way", shop, lat, lon, tags, city)
+					node := m[v.NodeIDs[0]]
+					createDataElementFile(citySlug, nameSlug, v.ID, "way", shop, node.lat, node.lon, tags, city)
 				}
 				wc++
 			case *osmpbf.Relation:
