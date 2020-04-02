@@ -121,7 +121,7 @@ latitude: {{ .latitude }}
 longitude: {{ .longitude }}
 postcode: {{ .postcode }}
 city: {{ .city }}
-street: {{ .street }}
+street: "{{ .street }}"
 housenumber: {{ .housenumber }}
 phone: "{{ .phone }}"
 opening_hours: "{{ .opening_hours }}"
@@ -577,7 +577,7 @@ func translateShop(shop string) string {
 }
 
 func main() {
-  f, err := os.Open("baden-wuerttemberg-latest.osm.pbf")
+  f, err := os.Open("thueringen-latest.osm.pbf")
 	if err != nil {
 		log.Fatal(err)
 	}
