@@ -19,17 +19,9 @@ type LatLon struct {
 	lon float64
 }
 
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-			return false
-	}
-	return !info.IsDir()
-}
-
 func createIndexFile(citySlug string , city string) {
 	indexFile := "content/cities/" + citySlug + "/_index.md"
-	if !fileExists(indexFile) {
+	if _, err := os.Stat(indexFile); os.IsNotExist(err) {
 		f, err := os.Create(indexFile)
 		if err != nil {
 			fmt.Println(err)
@@ -39,14 +31,14 @@ func createIndexFile(citySlug string , city string) {
 			"title": city,
 			"url":  "/" + citySlug + "/",
 		}
-		const indexTmpl = `---
+		indexTmpl := `---
 title: {{ .title }}
 url: {{ .url }}
 ---
 `
 	  indexTemplate := template.Must(template.New("index").Parse(indexTmpl))
-		if err := indexTemplate.Execute(f, data); err != nil {
-				panic(err)
+		if err = indexTemplate.Execute(f, data); err != nil {
+			panic(err)
 		}
 		f.Close()
 	}
@@ -54,17 +46,17 @@ url: {{ .url }}
 
 func createElementFile(citySlug string, nameSlug string, name string) {
 	elementFile := "content/cities/" + citySlug + "/" + nameSlug + ".md"
-	if fileExists(elementFile) {
-		var re = regexp.MustCompile(`\d+$`)
+	if _, err := os.Stat(elementFile); !os.IsNotExist(err) {
+		re := regexp.MustCompile(`\d+$`)
 		i := 2
 		nameSlug = fmt.Sprintf("%s-%d", nameSlug, i)
 		for {
-			elementFile := "content/cities/" + citySlug + "/" + nameSlug + ".md"
-			if !fileExists(elementFile) {
+			elementFile = "content/cities/" + citySlug + "/" + nameSlug + ".md"
+			if _, err = os.Stat(elementFile); os.IsNotExist(err) {
 				break
 			}
-			nameSlug = re.ReplaceAllString(nameSlug, strconv.Itoa(i))
 			i++
+			nameSlug = re.ReplaceAllString(nameSlug, strconv.Itoa(i))
 		}
 	}
 	f, err := os.Create(elementFile)
@@ -76,31 +68,31 @@ func createElementFile(citySlug string, nameSlug string, name string) {
 		"title": strings.Replace(name, "\"", "", -1),
 		"url":  "/" + citySlug + "/" + nameSlug + "/",
 	}
-	const mdTmpl = `---
+	mdTmpl := `---
 title: "{{ .title }}"
 url: {{ .url }}
 ---
 `
 	mdTemplate := template.Must(template.New("markdown").Parse(mdTmpl))
-	if err := mdTemplate.Execute(f, data); err != nil {
-			panic(err)
+	if err = mdTemplate.Execute(f, data); err != nil {
+		panic(err)
 	}
 	f.Close()
 }
 
 func createDataElementFile(citySlug string, nameSlug string, id int64, elementType string, shop string, lat float64, lon float64, tags map[string]string, city string) {
 	elementFile := "data/cities/" + citySlug + "/" + nameSlug + ".yml"
-	if fileExists(elementFile) {
-		var re = regexp.MustCompile(`\d+$`)
+	if _, err := os.Stat(elementFile); !os.IsNotExist(err) {
+		re := regexp.MustCompile(`\d+$`)
 		i := 2
 		nameSlug = fmt.Sprintf("%s-%d", nameSlug, i)
 		for {
-			elementFile := "data/cities/" + citySlug + "/" + nameSlug + ".yml"
-			if !fileExists(elementFile) {
+			elementFile = "data/cities/" + citySlug + "/" + nameSlug + ".yml"
+			if _, err = os.Stat(elementFile); os.IsNotExist(err) {
 				break
 			}
-			nameSlug = re.ReplaceAllString(nameSlug, strconv.Itoa(i))
 			i++
+			nameSlug = re.ReplaceAllString(nameSlug, strconv.Itoa(i))
 		}
 	}
 	f, err := os.Create(elementFile)
@@ -122,7 +114,7 @@ func createDataElementFile(citySlug string, nameSlug string, id int64, elementTy
 		"opening_hours": strings.Replace(tags["opening_hours"], "\"", "", -1),
 		"website":       strings.Replace(tags["website"], "\"", "", -1),
 	}
-	const dataTmpl = `id: {{ .id }}
+	dataTmpl := `id: {{ .id }}
 type: {{ .type }}
 shop: {{ .shop }}
 latitude: {{ .latitude }}
@@ -136,7 +128,7 @@ opening_hours: "{{ .opening_hours }}"
 website: "{{ .website }}"
 `
   dataTemplate := template.Must(template.New("data").Parse(dataTmpl))
-	if err := dataTemplate.Execute(f, data); err != nil {
+	if err = dataTemplate.Execute(f, data); err != nil {
 		panic(err)
 	}
 	f.Close()
@@ -183,7 +175,7 @@ func translateShop(shop string) string {
 			translatedShop = "Eisprodukte"
 		case "pasta":
 			translatedShop = "Pasta"
-		case "pastry":
+		case "pastry", "cake":
 			translatedShop = "Konditorei"
 		case "seafood", "fishmonger":
 			translatedShop = "Fisch"
@@ -217,7 +209,7 @@ func translateShop(shop string) string {
 			translatedShop = "Modehaus"
 		case "clothes":
 			translatedShop = "Kleidung"
-		case "fabric":
+		case "fabric", "fabrics":
 			translatedShop = "Textil"
 		case "fashion_accessoires":
 			translatedShop = "Modeaccessoires"
@@ -243,7 +235,7 @@ func translateShop(shop string) string {
 		case "variety_store":
 			translatedShop = "Kramladen"
 		// Gesundheit und Schönheitspflege
-		case "beauty", "cosmetics", "decorative_cosmetics", "nail_salon", "wellness":
+		case "beauty", "cosmetics", "decorative_cosmetics", "nail_salon", "wellness", "cosmetic":
 			translatedShop = "Kosmetik"
 		case "chemist":
 			translatedShop = "Drogerie"
@@ -259,7 +251,7 @@ func translateShop(shop string) string {
 			translatedShop = "Kräuter"
 		case "massage":
 			translatedShop = "Massage"
-		case "medical_supply", "medical", "orthopedics":
+		case "medical_supply", "medical", "orthopedics", "sanitary":
 			translatedShop = "Sanitätshaus"
 		case "nutrition_supplements":
 			translatedShop = "Nahrungsergänzung"
@@ -274,11 +266,11 @@ func translateShop(shop string) string {
 			translatedShop = "Landwirtschaftlich"
 		case "appliance":
 			translatedShop = "Haushaltsgeräte"
-		case "bathroom_furnishing", "bathroom":
+		case "bathroom_furnishing", "bathroom", "bath":
 			translatedShop = "Badezimmer"
 		case "doityourself":
 			translatedShop = "Baumarkt"
-		case "electrical":
+		case "electrical", "electric":
 			translatedShop = "Elektrisch"
 		case "energy", "battery":
 			translatedShop = "Energie"
@@ -329,7 +321,7 @@ func translateShop(shop string) string {
 			translatedShop = "Küchen"
 		case "lamps", "lighting":
 			translatedShop = "Lampen"
-		case "tiles", "tile":
+		case "tiles", "tile", "tiling":
 			translatedShop = "Fliesen"
 		case "window_blind", "shutter":
 			translatedShop = "Rollladen"
@@ -338,7 +330,7 @@ func translateShop(shop string) string {
 			translatedShop = "Computer"
 		case "robot":
 			translatedShop = "Roboter"
-		case "electronics", "electronics_repair":
+		case "electronics", "electronics_repair", "electro":
 			translatedShop = "Elektronik"
 		case "hifi":
 			translatedShop = "Hifi"
@@ -353,7 +345,7 @@ func translateShop(shop string) string {
 			translatedShop = "Quad"
 		case "bicycle", "bike_repair":
 			translatedShop = "Fahrrad"
-		case "boat":
+		case "boat", "yachts":
 			translatedShop = "Boot"
 		case "car":
 			translatedShop = "Autohaus"
@@ -396,7 +388,7 @@ func translateShop(shop string) string {
 		case "tyres":
 			translatedShop = "Reifen"
 		// Kunst, Musik, Hobbys
-		case "art":
+		case "art", "arts", "artwork":
 			translatedShop = "Kunst"
 		case "collector", "coins", "comics", "stamps":
 			translatedShop = "Sammler"
@@ -412,7 +404,7 @@ func translateShop(shop string) string {
 			translatedShop = "Musik"
 		case "musical_instrument", "woodwind_repair":
 			translatedShop = "Instrumente"
-		case "photo", "photo_studio", "photographic_studio":
+		case "photo", "photo_studio", "photographic_studio", "photographer":
 			translatedShop = "Foto"
 		case "camera":
 			translatedShop = "Kamera"
@@ -442,7 +434,7 @@ func translateShop(shop string) string {
 			translatedShop = "Wettbüro"
 		case "cannabis":
 			translatedShop = "Hanf"
-		case "copyshop", "printing", "print_shop", "printer_ink", "ink_cartridges":
+		case "copyshop", "printing", "print_shop", "printer_ink", "ink_cartridges", "printer", "paper":
 			translatedShop = "Kopieren"
 		case "e-cigarette":
 			translatedShop = "E-Zigaretten"
@@ -481,7 +473,7 @@ func translateShop(shop string) string {
 		// Benutzerdefiniert
 		case "apiary", "beekeeping", "beekeepers_need":
 			translatedShop = "Imkerei"
-		case "auction_house", "auctioneer":
+		case "auction_house", "auctioneer", "auction":
 			translatedShop = "Auktionshaus"
 		case "car_accessories", "child_safety_seats":
 			translatedShop = "Autozubehör"
@@ -489,7 +481,7 @@ func translateShop(shop string) string {
 			translatedShop = "Autoservice"
 		case "caretaker", "building_cleaner":
 			translatedShop = "Hausmeister"
-		case "carpenter", "cabinet_maker":
+		case "carpenter", "cabinet_maker", "carpentry":
 			translatedShop = "Schreinerei"
 		case "casino", "gambling":
 			translatedShop = "Spielkasino"
@@ -525,7 +517,7 @@ func translateShop(shop string) string {
 			translatedShop = "Hüte"
 		case "health":
 			translatedShop = "Gesundheit"
-		case "heating_system":
+		case "heating_system", "heater":
 			translatedShop = "Heizungsanlagen"
 		case "hookah":
 			translatedShop = "Wasserpfeife"
@@ -533,20 +525,20 @@ func translateShop(shop string) string {
 			translatedShop = "Hypnose"
 		case "internet_service_provider":
 			translatedShop = "Internetanbieter"
-	  case "joiner":
+	    case "joiner":
 			translatedShop = "Tischlerei"
 		case "kids_furnishing":
 			translatedShop = "Kinder"
 		case "furs":
 			translatedShop = "Pelze"
-		case "lettering", "license_plate", "license_plates", "number_plate", "sign_make":
+		case "lettering", "license_plate", "license_plates", "number_plate", "sign_make", "signs":
 			translatedShop = "Beschriftungen"
-		case "locksmithery", "metalworker":
+		case "locksmithery", "metalworker", "metalwork", "metalworking":
 			translatedShop = "Schlosserei"
 		case "machinery", "vehicle", "forklift", "agricultural_machinery", "industrial":
 			translatedShop = "Maschinen"
-		case "office_supplies", "office":
-			translatedShop = "Büromaterial"
+		case "office_supplies", "office", "stationery":
+			translatedShop = "Schreibwaren"
 		case "pet_food", "fodder":
 			translatedShop = "Tierfutter"
 		case "plumber", "plumbing_business":
@@ -561,20 +553,22 @@ func translateShop(shop string) string {
 			translatedShop = "Software"
 		case "solarium", "sunstudio":
 			translatedShop = "Solarium"
+		case "stones", "tombstone":
+			translatedShop = "Steine"
 		case "tanning":
 			translatedShop = "Gerberei"
 		case "tools":
 			translatedShop = "Werkzeuge"
 		case "wedding_gown":
 			translatedShop = "Brautkleider"
-		case "whirlpool":
-			translatedShop = "Whirlpool"
+		case "whirlpool", "pool":
+			translatedShop = "Pool"
 		case "wood":
 			translatedShop = "Holz"
 		case "worldshop", "one_world":
 			translatedShop = "Weltladen"
 		case "yes":
-			translatedShop = "Allgemeine"
+			translatedShop = "Allgemein"
 		default:
 			translatedShop = "Andere"
 			fmt.Println("unknown shop:", shop)
@@ -591,7 +585,9 @@ func main() {
 
 	d := osmpbf.NewDecoder(f)
 
+	// Cache nodes and ways
 	m := make(map[int64]LatLon)
+	n := make(map[int64]string)
 
 	// use more memory from the start, it is faster
 	d.SetBufferSize(osmpbf.MaxBlobSize)
@@ -618,7 +614,6 @@ func main() {
 				if city != "" && name != "" && shop != "" {
 					citySlug := slug.MakeLang(city, "de")
 					nameSlug := slug.MakeLang(name, "de")
-					shop = translateShop(shop)
 
 					// 1. content
 					err = os.MkdirAll("content/cities/" + citySlug, 0755)
@@ -627,7 +622,7 @@ func main() {
 
 					// 2. data
 					err = os.MkdirAll("data/cities/" + citySlug, 0755)
-					createDataElementFile(citySlug, nameSlug, v.ID, "node", shop, v.Lat, v.Lon, tags, city)
+					createDataElementFile(citySlug, nameSlug, v.ID, "node", translateShop(shop), v.Lat, v.Lon, tags, city)
 				}
 				m[v.ID] = LatLon{v.Lat, v.Lon}
 				nc++
@@ -637,10 +632,9 @@ func main() {
 				city := tags["addr:city"]
 				name := tags["name"]
 				shop := tags["shop"]
-				if city != "" && name != "" && shop != "" {
+				if city != "" && name != "" && shop != "" && n[v.ID] == "" {
 					citySlug := slug.MakeLang(city, "de")
 					nameSlug := slug.MakeLang(name, "de")
-					shop = translateShop(shop)
 
 					// 1. content
 					err = os.MkdirAll("content/cities/" + citySlug, 0755)
@@ -650,7 +644,8 @@ func main() {
 					// 2. data
 					err = os.MkdirAll("data/cities/" + citySlug, 0755)
 					node := m[v.NodeIDs[0]]
-					createDataElementFile(citySlug, nameSlug, v.ID, "way", shop, node.lat, node.lon, tags, city)
+					createDataElementFile(citySlug, nameSlug, v.ID, "way", translateShop(shop), node.lat, node.lon, tags, city)
+					n[v.ID] = name
 				}
 				wc++
 			case *osmpbf.Relation:
@@ -661,6 +656,6 @@ func main() {
 			}
 		}
 	}
-
 	fmt.Printf("Nodes: %d, Ways: %d, Relations: %d\n", nc, wc, rc)
 }
+
