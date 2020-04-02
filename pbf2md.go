@@ -19,7 +19,7 @@ type LatLon struct {
 	lon float64
 }
 
-func createIndexFile(citySlug string , city string) {
+func createIndexFile(citySlug string , city string, latLon LatLon) {
 	indexFile := "content/cities/" + citySlug + "/_index.md"
 	if _, err := os.Stat(indexFile); os.IsNotExist(err) {
 		f, err := os.Create(indexFile)
@@ -30,10 +30,14 @@ func createIndexFile(citySlug string , city string) {
 		data := map[string]interface{} {
 			"title": city,
 			"url":  "/" + citySlug + "/",
+			"latitude": latLon.lat,
+			"longitude": latLon.lon,
 		}
 		indexTmpl := `---
 title: {{ .title }}
 url: {{ .url }}
+latitude: {{ with .latitude }}{{ . }}{{ end }}
+longitude: {{ with .longitude }}{{ . }}{{ end }}
 ---
 `
 	  indexTemplate := template.Must(template.New("index").Parse(indexTmpl))
@@ -577,7 +581,7 @@ func translateShop(shop string) string {
 }
 
 func main() {
-  f, err := os.Open("thueringen-latest.osm.pbf")
+  f, err := os.Open("bremen-latest.osm.pbf")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -585,9 +589,10 @@ func main() {
 
 	d := osmpbf.NewDecoder(f)
 
-	// Cache nodes and ways
+	// Cache nodes, ways and cities
 	m := make(map[int64]LatLon)
 	n := make(map[int64]string)
+	p := make(map[string]LatLon)
 
 	// use more memory from the start, it is faster
 	d.SetBufferSize(osmpbf.MaxBlobSize)
@@ -611,19 +616,25 @@ func main() {
 				city := tags["addr:city"]
 				name := tags["name"]
 				shop := tags["shop"]
+				place := tags["place"]
+				if place != "" && name != "" {
+					// Cache all cities LatLon
+					p[name] = LatLon{v.Lat, v.Lon}
+				}
 				if city != "" && name != "" && shop != "" {
 					citySlug := slug.MakeLang(city, "de")
 					nameSlug := slug.MakeLang(name, "de")
 
 					// 1. content
 					err = os.MkdirAll("content/cities/" + citySlug, 0755)
-					createIndexFile(citySlug, city)
+					createIndexFile(citySlug, city, p[city])
 					createElementFile(citySlug, nameSlug, name)
 
 					// 2. data
 					err = os.MkdirAll("data/cities/" + citySlug, 0755)
 					createDataElementFile(citySlug, nameSlug, v.ID, "node", translateShop(shop), v.Lat, v.Lon, tags, city)
 				}
+				// Cache all Nodes LatLon
 				m[v.ID] = LatLon{v.Lat, v.Lon}
 				nc++
 			case *osmpbf.Way:
@@ -638,13 +649,15 @@ func main() {
 
 					// 1. content
 					err = os.MkdirAll("content/cities/" + citySlug, 0755)
-					createIndexFile(citySlug, city)
+					createIndexFile(citySlug, city, p[city])
 					createElementFile(citySlug, nameSlug, name)
 
 					// 2. data
 					err = os.MkdirAll("data/cities/" + citySlug, 0755)
-					node := m[v.NodeIDs[0]]
+					node := m[v.NodeIDs[0]] // Lookup coords of first childnode
 					createDataElementFile(citySlug, nameSlug, v.ID, "way", translateShop(shop), node.lat, node.lon, tags, city)
+
+					// Ways might be twice
 					n[v.ID] = name
 				}
 				wc++
