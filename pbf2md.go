@@ -145,7 +145,7 @@ func translateShop(shop string) string {
 			translatedShop = "Bäckerei"
 		case "beverages":
 			translatedShop = "Getränke"
-		case "brewing_supplies":
+		case "brewing_supplies", "brewery":
 			translatedShop = "Brauerei"
 		case "butcher":
 			translatedShop = "Metzgerei"
@@ -155,7 +155,7 @@ func translateShop(shop string) string {
 			translatedShop = "Schokolade"
 		case "coffee", "coffee_roasting", "coffeemaker":
 			translatedShop = "Kaffee"
-		case "confectionery", "sweets":
+		case "confectionery", "sweets", "cookies":
 			translatedShop = "Süßwaren"
 		case "convenience":
 			translatedShop = "Tante Emma"
@@ -251,7 +251,7 @@ func translateShop(shop string) string {
 			translatedShop = "Kräuter"
 		case "massage":
 			translatedShop = "Massage"
-		case "medical_supply", "medical", "orthopedics", "sanitary":
+		case "medical_supply", "medical", "orthopedic", "orthopedics", "sanitary":
 			translatedShop = "Sanitätshaus"
 		case "nutrition_supplements":
 			translatedShop = "Nahrungsergänzung"
@@ -292,7 +292,7 @@ func translateShop(shop string) string {
 			translatedShop = "Haushaltsartikel"
 		case "locksmith", "keys":
 			translatedShop = "Schlüsseldienst"
-		case "paint", "paintings":
+		case "paint", "paintings", "colors", "painter":
 			translatedShop = "Farben"
 		case "security":
 			translatedShop = "Sicherheit"
@@ -323,7 +323,7 @@ func translateShop(shop string) string {
 			translatedShop = "Lampen"
 		case "tiles", "tile", "tiling":
 			translatedShop = "Fliesen"
-		case "window_blind", "shutter":
+		case "window_blind", "shutter", "shutters":
 			translatedShop = "Rollladen"
 		// Elektronik
 		case "computer":
@@ -353,7 +353,7 @@ func translateShop(shop string) string {
 			translatedShop = "Autowerkstatt"
 		case "car_parts":
 			translatedShop = "Autoteile"
-		case "caravan":
+		case "caravan", "caravaning":
 			translatedShop = "Wohnwagen"
 		case "fuel":
 			translatedShop = "Treibstoff"
@@ -427,16 +427,16 @@ func translateShop(shop string) string {
 			translatedShop = "Zeitungen"
 		case "stationary":
 			translatedShop = "Schreibwaren"
-		case "ticket":
+		case "ticket", "tickets":
 			translatedShop = "Tickets"
 		// Andere
 		case "bookmaker":
 			translatedShop = "Wettbüro"
-		case "cannabis":
+		case "cannabis", "growshop":
 			translatedShop = "Hanf"
-		case "copyshop", "printing", "print_shop", "printer_ink", "ink_cartridges", "printer", "paper":
+		case "copyshop", "printing", "print_shop", "printer_ink", "ink_cartridges", "printer", "printers", "paper", "printshop", "printery":
 			translatedShop = "Kopieren"
-		case "e-cigarette":
+		case "e-cigarette", "vape":
 			translatedShop = "E-Zigaretten"
 		case "funeral_directors":
 			translatedShop = "Bestattungen"
@@ -471,7 +471,7 @@ func translateShop(shop string) string {
 		case "outpost":
 			translatedShop = "Außenstelle"
 		// Benutzerdefiniert
-		case "apiary", "beekeeping", "beekeepers_need":
+		case "apiary", "beekeeping", "beekeepers_need", "honey", "beekeeper":
 			translatedShop = "Imkerei"
 		case "auction_house", "auctioneer", "auction":
 			translatedShop = "Auktionshaus"
@@ -487,8 +487,8 @@ func translateShop(shop string) string {
 			translatedShop = "Spielkasino"
 		case "catering", "catering_supplies":
 			translatedShop = "Catering"
-		case "equestrian", "horse_equipment":
-			translatedShop = "Reitsport"
+		case "equestrian", "horse_equipment", "horse":
+			translatedShop = "Pferde"
 		case "esoteric":
 			translatedShop = "Esoterik"
 		case "estate_agent":
@@ -517,9 +517,9 @@ func translateShop(shop string) string {
 			translatedShop = "Hüte"
 		case "health":
 			translatedShop = "Gesundheit"
-		case "heating_system", "heater":
+		case "heating_system", "heater", "heating":
 			translatedShop = "Heizungsanlagen"
-		case "hookah":
+		case "hookah", "shisha":
 			translatedShop = "Wasserpfeife"
 		case "hypnotism":
 			translatedShop = "Hypnose"
@@ -535,7 +535,7 @@ func translateShop(shop string) string {
 			translatedShop = "Beschriftungen"
 		case "locksmithery", "metalworker", "metalwork", "metalworking":
 			translatedShop = "Schlosserei"
-		case "machinery", "vehicle", "forklift", "agricultural_machinery", "industrial":
+		case "machinery", "vehicle", "vehicles", "forklift", "agricultural_machinery", "industrial", "machines":
 			translatedShop = "Maschinen"
 		case "office_supplies", "office", "stationery":
 			translatedShop = "Schreibwaren"
@@ -553,19 +553,19 @@ func translateShop(shop string) string {
 			translatedShop = "Software"
 		case "solarium", "sunstudio":
 			translatedShop = "Solarium"
-		case "stones", "tombstone":
+		case "stones", "tombstone", "tombstones", "gravestones":
 			translatedShop = "Steine"
 		case "tanning":
 			translatedShop = "Gerberei"
-		case "tools":
+		case "tools", "screws":
 			translatedShop = "Werkzeuge"
-		case "wedding_gown":
+		case "wedding_gown", "wedding":
 			translatedShop = "Brautkleider"
 		case "whirlpool", "pool":
 			translatedShop = "Pool"
-		case "wood":
+		case "wood", "timber", "sawmill":
 			translatedShop = "Holz"
-		case "worldshop", "one_world":
+		case "worldshop", "one_world", "afro", "oneworld":
 			translatedShop = "Weltladen"
 		case "yes":
 			translatedShop = "Allgemein"
@@ -577,7 +577,7 @@ func translateShop(shop string) string {
 }
 
 func main() {
-  f, err := os.Open("bayern-latest.osm.pbf")
+  f, err := os.Open("baden-wuerttemberg-latest.osm.pbf")
 	if err != nil {
 		log.Fatal(err)
 	}
