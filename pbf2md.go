@@ -161,8 +161,8 @@ func translateShop(shop string) string {
 			translatedShop = "Kaffee"
 		case "confectionery", "sweets", "cookies":
 			translatedShop = "Süßwaren"
-		case "convenience":
-			translatedShop = "Tante Emma"
+		case "convenience", "food", "grocery":
+			translatedShop = "Lebensmittel"
 		case "deli":
 			translatedShop = "Feinkost"
 		case "dairy":
@@ -172,7 +172,7 @@ func translateShop(shop string) string {
 		case "frozen_food":
 			translatedShop = "Tiefkühl"
 		case "greengrocer", "vegetables":
-			translatedShop = "Gemüse & Obst"
+			translatedShop = "Gemüse"
 		case "health_food", "organic":
 			translatedShop = "Bioladen"
 		case "ice_cream":
@@ -208,7 +208,7 @@ func translateShop(shop string) string {
 		case "baby_goods":
 			translatedShop = "Baby"
 		case "bag", "suitcases":
-			translatedShop = "Taschen & Koffer"
+			translatedShop = "Taschen"
 		case "boutique", "fashion":
 			translatedShop = "Modehaus"
 		case "clothes":
@@ -232,10 +232,8 @@ func translateShop(shop string) string {
 		case "wool":
 			translatedShop = "Wolle"
 		// Discounter, Wohltätigkeit
-		case "charity":
+		case "charity", "second_hand":
 			translatedShop = "Gebrauchtwaren"
-		case "second_hand":
-			translatedShop = "Second Hand"
 		case "variety_store":
 			translatedShop = "Kramladen"
 		// Gesundheit und Schönheitspflege
@@ -279,7 +277,7 @@ func translateShop(shop string) string {
 		case "energy", "battery":
 			translatedShop = "Energie"
 		case "fireplace", "furnace", "oven":
-			translatedShop = "Kamine & Öfen"
+			translatedShop = "Kamine"
 		case "florist":
 			translatedShop = "Blumen"
 		case "garden_centre":
@@ -505,8 +503,6 @@ func translateShop(shop string) string {
 			translatedShop = "Fitness"
 		case "flour":
 			translatedShop = "Mehl"
-		case "food", "grocery":
-			translatedShop = "Lebensmittel"
 		case "glass":
 			translatedShop = "Glas"
 		case "garden_service":
@@ -571,10 +567,8 @@ func translateShop(shop string) string {
 			translatedShop = "Holz"
 		case "worldshop", "one_world", "afro", "oneworld":
 			translatedShop = "Weltladen"
-		case "yes":
-			translatedShop = "Allgemein"
 		default:
-			translatedShop = "Andere"
+			translatedShop = "Allgemein"
 			fmt.Println("unknown shop:", shop)
 	}
 	return translatedShop
