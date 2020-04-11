@@ -5,7 +5,6 @@ Parse OpenStreetMap *.pbf files and convert specific entries to markdown files
 ## Getting Started
 * download and set up Go: see https://golang.org/doc/install
 * clone this repository
-* checkout the `shops` branch
 * download required packages: `go get -v github.com/qedus/osmpbf github.com/gosimple/slug`
 * build: `go build`
 * download OSM data:
