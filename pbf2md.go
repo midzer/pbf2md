@@ -123,7 +123,7 @@ type: {{ .type }}
 shop: {{ .shop }}
 latitude: {{ .latitude }}
 longitude: {{ .longitude }}
-postcode: {{ .postcode }}
+postcode: "{{ .postcode }}"
 city: {{ .city }}
 street: "{{ .street }}"
 housenumber: {{ .housenumber }}
