@@ -172,7 +172,7 @@ func translateShop(shop string) string {
 		case "frozen_food":
 			translatedShop = "Tiefkühl"
 		case "greengrocer", "vegetables":
-			translatedShop = "Gemüse"
+			translatedShop = "Gemüse & Obst"
 		case "health_food", "organic":
 			translatedShop = "Bioladen"
 		case "ice_cream":
@@ -206,17 +206,15 @@ func translateShop(shop string) string {
 			translatedShop = "Großhandel"
 		// Kleidung, Schuhe, Accessoires
 		case "baby_goods":
-			translatedShop = "Baby"
+			translatedShop = "Babysachen"
 		case "bag", "suitcases":
-			translatedShop = "Taschen"
-		case "boutique", "fashion":
+			translatedShop = "Taschen & Koffer"
+		case "boutique", "fashion", "fashion_accessoires":
 			translatedShop = "Modehaus"
 		case "clothes":
 			translatedShop = "Kleidung"
 		case "fabric", "fabrics":
 			translatedShop = "Textil"
-		case "fashion_accessoires":
-			translatedShop = "Modeaccessoires"
 		case "jewelry", "gemstone", "gold", "gold_buyer":
 			translatedShop = "Schmuck"
 		case "leather":
@@ -277,7 +275,7 @@ func translateShop(shop string) string {
 		case "energy", "battery":
 			translatedShop = "Energie"
 		case "fireplace", "furnace", "oven":
-			translatedShop = "Kamine"
+			translatedShop = "Kamine & Öfen"
 		case "florist":
 			translatedShop = "Blumen"
 		case "garden_centre":
@@ -326,7 +324,7 @@ func translateShop(shop string) string {
 		case "tiles", "tile", "tiling":
 			translatedShop = "Fliesen"
 		case "window_blind", "shutter", "shutters":
-			translatedShop = "Rollladen"
+			translatedShop = "Jalousien"
 		// Elektronik
 		case "computer":
 			translatedShop = "Computer"
@@ -339,7 +337,7 @@ func translateShop(shop string) string {
 		case "mobile_phone", "telephone", "phone", "communication", "telecommunication":
 			translatedShop = "Handy"
 		case "radiotechnics":
-			translatedShop = "Elektronisches"
+			translatedShop = "Radiotechnik"
 		case "vacuum_cleaner":
 			translatedShop = "Staubsauger"
 		// Outdoor und Sport, Fahrzeuge
