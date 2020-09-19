@@ -619,6 +619,12 @@ func main() {
 						citySlug := slug.MakeLang(city, "de")
 						nameSlug := slug.MakeLang(name, "de")
 
+						// Exceptions: skip foreign cities
+						if citySlug == "s-heerenberg" {
+							// 's-Heerenberg in the Netherlands
+							continue
+						}
+
 						// 1. content
 						err = os.MkdirAll(r + "/content/cities/" + citySlug, 0755)
 						createIndexFile(r, citySlug, city, p[city])
