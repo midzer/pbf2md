@@ -19,7 +19,7 @@ type LatLon struct {
 	lon float64
 }
 
-func createIndexFile(citySlug string, city string) {
+func createIndexFile(citySlug string, city string, template *template.Template) {
 	indexFile := "content/cities/" + citySlug + "/_index.md"
 	if _, err := os.Stat(indexFile); os.IsNotExist(err) {
 		f, err := os.Create(indexFile)
@@ -31,20 +31,14 @@ func createIndexFile(citySlug string, city string) {
 			"title": city,
 			"url":  "/" + citySlug + "/",
 		}
-		indexTmpl := `---
-title: {{ .title }}
-url: {{ .url }}
----
-`
-	  indexTemplate := template.Must(template.New("index").Parse(indexTmpl))
-		if err = indexTemplate.Execute(f, data); err != nil {
+		if err = template.Execute(f, data); err != nil {
 			panic(err)
 		}
 		f.Close()
 	}
 }
 
-func createElementFile(citySlug string, nameSlug string, name string) {
+func createElementFile(citySlug string, nameSlug string, name string, template *template.Template) {
 	elementFile := "content/cities/" + citySlug + "/" + nameSlug + ".md"
 	if _, err := os.Stat(elementFile); !os.IsNotExist(err) {
 		re := regexp.MustCompile(`\d+$`)
@@ -68,19 +62,13 @@ func createElementFile(citySlug string, nameSlug string, name string) {
 		"title": strings.Replace(name, "\"", "", -1),
 		"url":  "/" + citySlug + "/" + nameSlug + "/",
 	}
-	mdTmpl := `---
-title: "{{ .title }}"
-url: {{ .url }}
----
-`
-	mdTemplate := template.Must(template.New("markdown").Parse(mdTmpl))
-	if err = mdTemplate.Execute(f, data); err != nil {
+	if err = template.Execute(f, data); err != nil {
 		panic(err)
 	}
 	f.Close()
 }
 
-func createDataElementFile(citySlug string, nameSlug string, id int64, lat float64, lon float64, tags map[string]string, city string) {
+func createDataElementFile(citySlug string, nameSlug string, id int64, lat float64, lon float64, tags map[string]string, city string, template *template.Template) {
 	elementFile := "data/cities/" + citySlug + "/" + nameSlug + ".yml"
 	if _, err := os.Stat(elementFile); !os.IsNotExist(err) {
 		re := regexp.MustCompile(`\d+$`)
@@ -112,19 +100,7 @@ func createDataElementFile(citySlug string, nameSlug string, id int64, lat float
 		"opening_hours": strings.Replace(tags["opening_hours"], "\"", "", -1),
 		"website":       strings.Replace(tags["website"], "\"", "", -1),
 	}
-	dataTmpl := `id: {{ .id }}
-latitude: {{ .latitude }}
-longitude: {{ .longitude }}
-postcode: "{{ .postcode }}"
-city: {{ .city }}
-street: "{{ .street }}"
-housenumber: {{ .housenumber }}
-phone: "{{ .phone }}"
-opening_hours: "{{ .opening_hours }}"
-website: "{{ .website }}"
-`
-  dataTemplate := template.Must(template.New("data").Parse(dataTmpl))
-	if err = dataTemplate.Execute(f, data); err != nil {
+	if err = template.Execute(f, data); err != nil {
 		panic(err)
 	}
 	f.Close()
@@ -142,6 +118,32 @@ func main() {
 	// Cache nodes, ways and cities
 	m := make(map[int64]LatLon)
 	n := make(map[int64]string)
+
+	// Create templates
+	indexTmpl := `---
+title: {{ .title }}
+url: {{ .url }}
+---
+`
+	indexTemplate := template.Must(template.New("index").Parse(indexTmpl))
+	mdTmpl := `---
+title: "{{ .title }}"
+url: {{ .url }}
+---
+`
+	mdTemplate := template.Must(template.New("markdown").Parse(mdTmpl))
+	dataTmpl := `id: {{ .id }}
+latitude: {{ .latitude }}
+longitude: {{ .longitude }}
+postcode: "{{ .postcode }}"
+city: {{ .city }}
+street: "{{ .street }}"
+housenumber: {{ .housenumber }}
+phone: "{{ .phone }}"
+opening_hours: "{{ .opening_hours }}"
+website: "{{ .website }}"
+`
+    dataTemplate := template.Must(template.New("data").Parse(dataTmpl))
 
 	// use more memory from the start, it is faster
 	d.SetBufferSize(osmpbf.MaxBlobSize)
@@ -172,12 +174,12 @@ func main() {
 
 					// 1. content
 					err = os.MkdirAll("content/cities/" + citySlug, 0755)
-					createIndexFile(citySlug, city)
-					createElementFile(citySlug, nameSlug, name)
+					createIndexFile(citySlug, city, indexTemplate)
+					createElementFile(citySlug, nameSlug, name, mdTemplate)
 
 					// 2. data
 					err = os.MkdirAll("data/cities/" + citySlug, 0755)
-					createDataElementFile(citySlug, nameSlug, v.ID, v.Lat, v.Lon, tags, city)
+					createDataElementFile(citySlug, nameSlug, v.ID, v.Lat, v.Lon, tags, city, dataTemplate)
 				}
 				// Cache all Nodes LatLon
 				m[v.ID] = LatLon{v.Lat, v.Lon}
@@ -194,13 +196,13 @@ func main() {
 
 					// 1. content
 					err = os.MkdirAll("content/cities/" + citySlug, 0755)
-					createIndexFile(citySlug, city)
-					createElementFile(citySlug, nameSlug, name)
+					createIndexFile(citySlug, city, indexTemplate)
+					createElementFile(citySlug, nameSlug, name, mdTemplate)
 
 					// 2. data
 					err = os.MkdirAll("data/cities/" + citySlug, 0755)
 					node := m[v.NodeIDs[0]] // Lookup coords of first childnode
-					createDataElementFile(citySlug, nameSlug, v.ID, node.lat, node.lon, tags, city)
+					createDataElementFile(citySlug, nameSlug, v.ID, node.lat, node.lon, tags, city, dataTemplate)
 
 					// Ways might be twice
 					n[v.ID] = name
