@@ -41,7 +41,7 @@ func createIndexFile(region string, citySlug string, city string, latLon LatLon,
 	}
 }
 
-func createElementFile(region string, citySlug string, nameSlug string, name string, template *template.Template) {
+func createElementFile(region string, citySlug string, nameSlug string, name string, shop string, template *template.Template) {
 	elementFile := region + "/content/cities/" + citySlug + "/" + nameSlug + ".md"
 	if _, err := os.Stat(elementFile); !os.IsNotExist(err) {
 		re := regexp.MustCompile(`\d+$`)
@@ -64,6 +64,7 @@ func createElementFile(region string, citySlug string, nameSlug string, name str
 	data := map[string]interface{}{
 		"title": strings.Replace(name, "\"", "", -1),
 		"url":   "/" + citySlug + "/" + nameSlug + "/",
+		"shop":  shop,
 	}
 	if err = template.Execute(f, data); err != nil {
 		panic(err)
@@ -71,7 +72,7 @@ func createElementFile(region string, citySlug string, nameSlug string, name str
 	f.Close()
 }
 
-func createDataElementFile(region string, citySlug string, nameSlug string, id int64, elementType string, shop string, lat float64, lon float64, tags map[string]string, city string, template *template.Template) {
+func createDataElementFile(region string, citySlug string, nameSlug string, id int64, elementType string, lat float64, lon float64, tags map[string]string, city string, template *template.Template) {
 	elementFile := region + "/data/cities/" + citySlug + "/" + nameSlug + ".yml"
 	if _, err := os.Stat(elementFile); !os.IsNotExist(err) {
 		re := regexp.MustCompile(`\d+$`)
@@ -94,7 +95,6 @@ func createDataElementFile(region string, citySlug string, nameSlug string, id i
 	data := map[string]interface{}{
 		"id":            id,
 		"type":          elementType,
-		"shop":          shop,
 		"latitude":      lat,
 		"longitude":     lon,
 		"postcode":      tags["addr:postcode"],
@@ -572,12 +572,12 @@ longitude: {{ with .longitude }}{{ . }}{{ end }}
 	mdTmpl := `---
 title: "{{ .title }}"
 url: {{ .url }}
+shop: {{ .shop }}
 ---
 `
 	mdTemplate := template.Must(template.New("markdown").Parse(mdTmpl))
 	dataTmpl := `id: {{ .id }}
 type: {{ .type }}
-shop: {{ .shop }}
 latitude: {{ .latitude }}
 longitude: {{ .longitude }}
 postcode: "{{ .postcode }}"
@@ -630,11 +630,11 @@ website: "{{ .website }}"
 					// 1. content
 					err = os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
 					createIndexFile(region, citySlug, city, p[city], indexTemplate)
-					createElementFile(region, citySlug, nameSlug, name, mdTemplate)
+					createElementFile(region, citySlug, nameSlug, name, translateShop(shop), mdTemplate)
 
 					// 2. data
 					err = os.MkdirAll(region+"/data/cities/"+citySlug, 0755)
-					createDataElementFile(region, citySlug, nameSlug, v.ID, "node", translateShop(shop), v.Lat, v.Lon, tags, city, dataTemplate)
+					createDataElementFile(region, citySlug, nameSlug, v.ID, "node", v.Lat, v.Lon, tags, city, dataTemplate)
 				}
 				// Cache all Nodes LatLon
 				m[v.ID] = LatLon{v.Lat, v.Lon}
@@ -652,12 +652,12 @@ website: "{{ .website }}"
 					// 1. content
 					err = os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
 					createIndexFile(region, citySlug, city, p[city], indexTemplate)
-					createElementFile(region, citySlug, nameSlug, name, mdTemplate)
+					createElementFile(region, citySlug, nameSlug, name, translateShop(shop), mdTemplate)
 
 					// 2. data
 					err = os.MkdirAll(region+"/data/cities/"+citySlug, 0755)
 					node := m[v.NodeIDs[0]] // Lookup coords of first childnode
-					createDataElementFile(region, citySlug, nameSlug, v.ID, "way", translateShop(shop), node.lat, node.lon, tags, city, dataTemplate)
+					createDataElementFile(region, citySlug, nameSlug, v.ID, "way", node.lat, node.lon, tags, city, dataTemplate)
 
 					// Ways might be twice
 					n[v.ID] = name
