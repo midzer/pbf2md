@@ -41,6 +41,26 @@ func createIndexFile(region string, citySlug string, city string, latLon LatLon,
 	}
 }
 
+func createShopFile(region string, shopSlug string, shop string, icon string, template *template.Template) {
+	indexFile := region + "/content/shops/" + shopSlug + "/_index.md"
+	if _, err := os.Stat(indexFile); os.IsNotExist(err) {
+		f, err := os.Create(indexFile)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		data := map[string]interface{}{
+			"title": shop,
+			"url":   "/" + shopSlug + "/",
+			"icon":  icon,
+		}
+		if err = template.Execute(f, data); err != nil {
+			panic(err)
+		}
+		f.Close()
+	}
+}
+
 func createElementFile(region string, citySlug string, nameSlug string, name string, shop string, template *template.Template) {
 	elementFile := region + "/content/cities/" + citySlug + "/" + nameSlug + ".md"
 	if _, err := os.Stat(elementFile); !os.IsNotExist(err) {
@@ -109,6 +129,101 @@ func createDataElementFile(region string, citySlug string, nameSlug string, id i
 		panic(err)
 	}
 	f.Close()
+}
+
+func Find(slice []string, val string) (int, bool) {
+	for i, item := range slice {
+		if item == val {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
+func getIcon(shop string) string {
+	icons := []string{
+		"alcohol",
+		"art",
+		"bag",
+		"bakery",
+		"beauty",
+		"bed",
+		"beverages",
+		"bicycle",
+		"bookmaker",
+		"books",
+		"butcher",
+		"car_parts",
+		"carpet",
+		"car_repair",
+		"car",
+		"charity",
+		"chemist",
+		"clothes",
+		"coffee",
+		"computer",
+		"confectionery",
+		"convenience",
+		"copyshop",
+		"dairy",
+		"deli",
+		"department_store",
+		"diy",
+		"doityourself",
+		"electronics",
+		"fabric",
+		"florist",
+		"furniture",
+		"garden_centre",
+		"gift",
+		"greengrocer",
+		"hairdresser",
+		"hifi",
+		"houseware",
+		"ice_cream",
+		"interior_decoration",
+		"jewellery",
+		"jewelry",
+		"kiosk",
+		"laundry",
+		"marketplace",
+		"massage",
+		"medical_supply",
+		"mobile_phone",
+		"motorcycle",
+		"musical_instrument",
+		"music",
+		"newsagent",
+		"news",
+		"optician",
+		"outdoor",
+		"paint",
+		"perfumery",
+		"pet",
+		"photo",
+		"seafood",
+		"second_hand",
+		"shoes",
+		"sports",
+		"stationery",
+		"supermarket",
+		"tea",
+		"ticket",
+		"tobacco",
+		"toys",
+		"trade",
+		"travel_agency",
+		"tyres",
+		"variety_store",
+		"video_games",
+		"video",
+	}
+	shopSplit := strings.Split(shop, ";")
+	_, found := Find(icons, shopSplit[0])
+	if found {
+		return shopSplit[0]
+	}
+	return "other"
 }
 
 func translateShop(shop string) string {
@@ -569,6 +684,13 @@ longitude: {{ with .longitude }}{{ . }}{{ end }}
 ---
 `
 	indexTemplate := template.Must(template.New("index").Parse(indexTmpl))
+	shopTmpl := `---
+title: {{ .title }}
+url: {{ .url }}
+icon: {{ .icon }}
+---
+`
+	shopTemplate := template.Must(template.New("index").Parse(shopTmpl))
 	mdTmpl := `---
 title: "{{ .title }}"
 url: {{ .url }}
@@ -620,6 +742,8 @@ website: "{{ .website }}"
 				if city != "" && name != "" && shop != "" {
 					citySlug := slug.MakeLang(city, "de")
 					nameSlug := slug.MakeLang(name, "de")
+					translatedShop := translateShop(shop)
+					shopSlug := slug.MakeLang(translatedShop, "de")
 
 					// Exceptions: skip foreign cities
 					if citySlug == "s-heerenberg" {
@@ -630,7 +754,9 @@ website: "{{ .website }}"
 					// 1. content
 					err = os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
 					createIndexFile(region, citySlug, city, p[city], indexTemplate)
-					createElementFile(region, citySlug, nameSlug, name, translateShop(shop), mdTemplate)
+					err = os.MkdirAll(region+"/content/shops/"+shopSlug, 0755)
+					createShopFile(region, shopSlug, translatedShop, getIcon(shop), shopTemplate)
+					createElementFile(region, citySlug, nameSlug, name, translatedShop, mdTemplate)
 
 					// 2. data
 					err = os.MkdirAll(region+"/data/cities/"+citySlug, 0755)
@@ -648,11 +774,15 @@ website: "{{ .website }}"
 				if city != "" && name != "" && shop != "" && n[v.ID] == "" {
 					citySlug := slug.MakeLang(city, "de")
 					nameSlug := slug.MakeLang(name, "de")
+					translatedShop := translateShop(shop)
+					shopSlug := slug.MakeLang(translatedShop, "de")
 
 					// 1. content
 					err = os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
 					createIndexFile(region, citySlug, city, p[city], indexTemplate)
-					createElementFile(region, citySlug, nameSlug, name, translateShop(shop), mdTemplate)
+					err = os.MkdirAll(region+"/content/shops/"+shopSlug, 0755)
+					createShopFile(region, shopSlug, translatedShop, getIcon(shop), shopTemplate)
+					createElementFile(region, citySlug, nameSlug, name, translatedShop, mdTemplate)
 
 					// 2. data
 					err = os.MkdirAll(region+"/data/cities/"+citySlug, 0755)
