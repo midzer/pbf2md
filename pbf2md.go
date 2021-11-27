@@ -171,7 +171,7 @@ website: "{{ .website }}"
 					city := tags["addr:city"]
 					name := tags["name"]
 					cuisine := tags["cuisine"]
-					if city != "" && name != "" && (cuisine == "turkish" || cuisine == "kebab") {
+					if city != "" && name != "" && (strings.Contains(cuisine, "turkish") || strings.Contains(cuisine, "kebab")) {
 						citySlug := slug.MakeLang(city, "de")
 						nameSlug := slug.MakeLang(name, "de")
 
@@ -193,7 +193,7 @@ website: "{{ .website }}"
 					city := tags["addr:city"]
 					name := tags["name"]
 					cuisine := tags["cuisine"]
-					if city != "" && name != "" && n[v.ID] != name && (cuisine == "turkish" || cuisine == "kebab") {
+					if city != "" && name != "" && n[v.ID] != name && (strings.Contains(cuisine, "turkish") || strings.Contains(cuisine, "kebab")) {
 						citySlug := slug.MakeLang(city, "de")
 						nameSlug := slug.MakeLang(name, "de")
 
