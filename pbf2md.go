@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"regexp"
 	"runtime"
@@ -20,6 +21,11 @@ type LatLon struct {
 	lon float64
 }
 
+func roundFloat(value float64, decimals float64) float64 {
+	factor := math.Pow(10, decimals)
+	return math.Round(value*factor)/factor
+}
+
 func createIndexFile(region string, citySlug string, city string, latLon LatLon, template *template.Template) {
 	indexFile := region + "/content/cities/" + citySlug + "/_index.md"
 	if _, err := os.Stat(indexFile); os.IsNotExist(err) {
@@ -31,8 +37,8 @@ func createIndexFile(region string, citySlug string, city string, latLon LatLon,
 		data := map[string]interface{}{
 			"title":     city,
 			"url":       "/" + citySlug + "/",
-			"latitude":  latLon.lat,
-			"longitude": latLon.lon,
+			"latitude":  roundFloat(latLon.lat, 3),
+			"longitude": roundFloat(latLon.lon, 3),
 		}
 		if err = template.Execute(f, data); err != nil {
 			panic(err)
@@ -115,8 +121,8 @@ func createDataElementFile(region string, citySlug string, nameSlug string, id i
 	data := map[string]interface{}{
 		"id":            id,
 		"type":          elementType,
-		"latitude":      lat,
-		"longitude":     lon,
+		"latitude":      roundFloat(lat, 5),
+		"longitude":     roundFloat(lon, 5),
 		"postcode":      tags["addr:postcode"],
 		"city":          city,
 		"street":        tags["addr:street"],
@@ -734,11 +740,6 @@ website: "{{ .website }}"
 				city := tags["addr:city"]
 				name := tags["name"]
 				shop := tags["shop"]
-				place := tags["place"]
-				if place != "" && name != "" {
-					// Cache all cities LatLon
-					p[name] = LatLon{v.Lat, v.Lon}
-				}
 				if city != "" && name != "" && shop != "" {
 					citySlug := slug.MakeLang(city, "de")
 					nameSlug := slug.MakeLang(name, "de")
@@ -750,10 +751,14 @@ website: "{{ .website }}"
 						// 's-Heerenberg in the Netherlands
 						continue
 					}
-
+					// Cache cities LatLon
+					_, exists := p[citySlug]
+					if !exists {
+						p[citySlug] = LatLon{v.Lat, v.Lon}
+					}
 					// 1. content
 					err = os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
-					createIndexFile(region, citySlug, city, p[city], indexTemplate)
+					createIndexFile(region, citySlug, city, p[citySlug], indexTemplate)
 					err = os.MkdirAll(region+"/content/shops/"+shopSlug, 0755)
 					createShopFile(region, shopSlug, translatedShop, getIcon(shop), shopTemplate)
 					createElementFile(region, citySlug, nameSlug, name, translatedShop, mdTemplate)
@@ -776,17 +781,22 @@ website: "{{ .website }}"
 					nameSlug := slug.MakeLang(name, "de")
 					translatedShop := translateShop(shop)
 					shopSlug := slug.MakeLang(translatedShop, "de")
+					node := m[v.NodeIDs[0]] // Lookup coords of first childnode
 
+					// Cache cities LatLon
+					_, exists := p[citySlug]
+					if !exists {
+						p[citySlug] = LatLon{node.lat, node.lon}
+					}
 					// 1. content
 					err = os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
-					createIndexFile(region, citySlug, city, p[city], indexTemplate)
+					createIndexFile(region, citySlug, city, p[citySlug], indexTemplate)
 					err = os.MkdirAll(region+"/content/shops/"+shopSlug, 0755)
 					createShopFile(region, shopSlug, translatedShop, getIcon(shop), shopTemplate)
 					createElementFile(region, citySlug, nameSlug, name, translatedShop, mdTemplate)
 
 					// 2. data
 					err = os.MkdirAll(region+"/data/cities/"+citySlug, 0755)
-					node := m[v.NodeIDs[0]] // Lookup coords of first childnode
 					createDataElementFile(region, citySlug, nameSlug, v.ID, "way", node.lat, node.lon, tags, city, dataTemplate)
 
 					// Ways might be twice
