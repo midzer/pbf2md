@@ -380,8 +380,6 @@ func translateShop(shop string) string {
 		translatedShop = "gas"
 	case "glaziery":
 		translatedShop = "glaziery"
-	case "groundskeeping":
-		translatedShop = "groundskeeping"
 	case "hardware":
 		translatedShop = "hardware"
 	case "houseware", "household", "house":
@@ -609,6 +607,8 @@ func translateShop(shop string) string {
 		translatedShop = "grill"
 	case "grinding":
 		translatedShop = "grinding"
+	case "groundskeeping":
+		translatedShop = "groundskeeping"
 	case "hat", "hats":
 		translatedShop = "hat"
 	case "health":
