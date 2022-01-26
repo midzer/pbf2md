@@ -303,13 +303,13 @@ func translateShop(shop string) string {
 		translatedShop = "Babysachen"
 	case "bag", "suitcases":
 		translatedShop = "Taschen & Koffer"
-	case "boutique", "fashion", "fashion_accessoires":
+	case "boutique", "fashion", "fashion_accessories":
 		translatedShop = "Modehaus"
 	case "clothes":
 		translatedShop = "Kleidung"
 	case "fabric", "fabrics":
 		translatedShop = "Textil"
-	case "jewelry", "gemstone", "gold", "gold_buyer":
+	case "jewelry", "jewellery", "gemstone", "gold", "gold_buyer":
 		translatedShop = "Schmuck"
 	case "leather":
 		translatedShop = "Leder"
@@ -579,6 +579,8 @@ func translateShop(shop string) string {
 		translatedShop = "Schreinerei"
 	case "casino", "gambling":
 		translatedShop = "Spielkasino"
+	case "catalogue":
+		translatedShop = "Katalog"
 	case "catering", "catering_supplies":
 		translatedShop = "Catering"
 	case "equestrian", "horse_equipment", "horse":
@@ -605,6 +607,8 @@ func translateShop(shop string) string {
 		translatedShop = "Grillen"
 	case "grinding":
 		translatedShop = "Schleifen"
+	case "groundskeeping":
+		translatedShop = "Platzpflege"
 	case "hat", "hats":
 		translatedShop = "Hüte"
 	case "health":
@@ -649,7 +653,7 @@ func translateShop(shop string) string {
 		translatedShop = "Steine"
 	case "tanning":
 		translatedShop = "Gerberei"
-	case "tools", "screws":
+	case "tools", "screws", "tool_hire":
 		translatedShop = "Werkzeuge"
 	case "wedding_gown", "wedding":
 		translatedShop = "Brautkleider"
