@@ -3,17 +3,16 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"math"
 	"os"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/gosimple/slug"
-	"github.com/qedus/osmpbf"
+	"github.com/thomersch/gosmparse"
 )
 
 type LatLon struct {
@@ -670,150 +669,163 @@ func translateShop(shop string) string {
 	return translatedShop
 }
 
+type dataPrepare struct {
+	Nodes     *uint64
+	Ways      *uint64
+}
+
+type dataHandler struct {
+	Nodes     *uint64
+	Ways      *uint64
+}
+
 func main() {
-	region := os.Args[1]
-	f, err := os.Open(region + "-latest.osm.pbf")
+	region = os.Args[1]
+	r, err := os.Open(region + "-latest.osm.pbf")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	defer f.Close()
+	dec := gosmparse.NewDecoder(r)
+	err = dec.Parse(&dataPrepare{})
+	if err != nil {
+		panic(err)
+	}
+	r.Seek(0, io.SeekStart)
+	err = dec.Parse(&dataHandler{})
+	if err != nil {
+		panic(err)
+	}
+}
 
-	d := osmpbf.NewDecoder(f)
-
-	// Cache nodes, ways and cities
-	m := make(map[int64]LatLon)
-	n := make(map[int64]string)
-	p := make(map[string]LatLon)
+// Globals
+var (
+	region string
+	nc sync.Map
+	wc sync.Map
 
 	// Create templates
-	indexTmpl := `---
-title: {{ .title }}
-url: {{ .url }}
-latitude: {{ with .latitude }}{{ . }}{{ end }}
-longitude: {{ with .longitude }}{{ . }}{{ end }}
----
-`
-	indexTemplate := template.Must(template.New("index").Parse(indexTmpl))
-	shopTmpl := `---
-title: {{ .title }}
-url: {{ .url }}
-icon: {{ .icon }}
----
-`
-	shopTemplate := template.Must(template.New("index").Parse(shopTmpl))
-	mdTmpl := `---
-title: "{{ .title }}"
-url: {{ .url }}
-shop: {{ .shop }}
----
-`
-	mdTemplate := template.Must(template.New("markdown").Parse(mdTmpl))
-	dataTmpl := `id: {{ .id }}
-type: {{ .type }}
-latitude: {{ .latitude }}
-longitude: {{ .longitude }}
-postcode: "{{ .postcode }}"
-city: {{ .city }}
-street: "{{ .street }}"
-housenumber: {{ .housenumber }}
-phone: "{{ .phone }}"
-opening_hours: "{{ .opening_hours }}"
-website: "{{ .website }}"
-`
-	dataTemplate := template.Must(template.New("data").Parse(dataTmpl))
+	indexTmpl = `---
+	title: {{ .title }}
+	url: {{ .url }}
+	latitude: {{ with .latitude }}{{ . }}{{ end }}
+	longitude: {{ with .longitude }}{{ . }}{{ end }}
+	---
+	`
+	indexTemplate = template.Must(template.New("index").Parse(indexTmpl))
+	shopTmpl = `---
+	title: {{ .title }}
+	url: {{ .url }}
+	icon: {{ .icon }}
+	---
+	`
+	shopTemplate = template.Must(template.New("index").Parse(shopTmpl))
+	mdTmpl = `---
+	title: "{{ .title }}"
+	url: {{ .url }}
+	shop: {{ .shop }}
+	---
+	`
+	mdTemplate = template.Must(template.New("markdown").Parse(mdTmpl))
+	dataTmpl = `id: {{ .id }}
+	type: {{ .type }}
+	latitude: {{ .latitude }}
+	longitude: {{ .longitude }}
+	postcode: "{{ .postcode }}"
+	city: {{ .city }}
+	street: "{{ .street }}"
+	housenumber: {{ .housenumber }}
+	phone: "{{ .phone }}"
+	opening_hours: "{{ .opening_hours }}"
+	website: "{{ .website }}"
+	`
+	dataTemplate = template.Must(template.New("data").Parse(dataTmpl))
+)
 
-	// use more memory from the start, it is faster
-	d.SetBufferSize(osmpbf.MaxBlobSize)
+func (d *dataPrepare) ReadNode(n gosmparse.Node) {}
 
-	// start decoding with several goroutines, it is faster
-	err = d.Start(runtime.GOMAXPROCS(-1))
-	if err != nil {
-		log.Fatal(err)
+func (d *dataHandler) ReadNode(n gosmparse.Node) {
+	tags := n.Tags
+	city := tags["addr:city"]
+	name := tags["name"]
+	shop := tags["shop"]
+	if city != "" && name != "" && shop != "" {
+		citySlug := slug.MakeLang(city, "de")
+		nameSlug := slug.MakeLang(name, "de")
+		translatedShop := translateShop(shop)
+		shopSlug := slug.MakeLang(translatedShop, "de")
+
+		// Exceptions: skip foreign cities
+		if citySlug == "s-heerenberg" {
+			// 's-Heerenberg in the Netherlands
+			return
+		}
+		// 1. content
+		os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
+		createIndexFile(region, citySlug, city, LatLon{n.Lat, n.Lon} /*cc[citySlug]*/, indexTemplate)
+		os.MkdirAll(region+"/content/shops/"+shopSlug, 0755)
+		createShopFile(region, shopSlug, translatedShop, getIcon(shop), shopTemplate)
+		createElementFile(region, citySlug, nameSlug, name, translatedShop, mdTemplate)
+
+		// 2. data
+		os.MkdirAll(region+"/data/cities/"+citySlug, 0755)
+		createDataElementFile(region, citySlug, nameSlug, n.ID, "node", n.Lat, n.Lon, tags, city, dataTemplate)
 	}
-	var nc, wc, rc uint64
-	for {
-		if v, err := d.Decode(); err == io.EOF {
-			break
-		} else if err != nil {
-			log.Fatal(err)
-		} else {
-			switch v := v.(type) {
-			case *osmpbf.Node:
-				// Process Node v.
-				tags := v.Tags
-				city := tags["addr:city"]
-				name := tags["name"]
-				shop := tags["shop"]
-				if city != "" && name != "" && shop != "" {
-					citySlug := slug.MakeLang(city, "de")
-					nameSlug := slug.MakeLang(name, "de")
-					translatedShop := translateShop(shop)
-					shopSlug := slug.MakeLang(translatedShop, "de")
+	// Cache necessary Nodes LatLon
+	wID, found := wc.Load(n.ID)
+	if found {
+		nc.Store(wID, LatLon{n.Lat, n.Lon})
+	}
+}
 
-					// Exceptions: skip foreign cities
-					if citySlug == "s-heerenberg" {
-						// 's-Heerenberg in the Netherlands
-						continue
-					}
-					// Cache cities LatLon
-					_, exists := p[citySlug]
-					if !exists {
-						p[citySlug] = LatLon{v.Lat, v.Lon}
-					}
-					// 1. content
-					err = os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
-					createIndexFile(region, citySlug, city, p[citySlug], indexTemplate)
-					err = os.MkdirAll(region+"/content/shops/"+shopSlug, 0755)
-					createShopFile(region, shopSlug, translatedShop, getIcon(shop), shopTemplate)
-					createElementFile(region, citySlug, nameSlug, name, translatedShop, mdTemplate)
-
-					// 2. data
-					err = os.MkdirAll(region+"/data/cities/"+citySlug, 0755)
-					createDataElementFile(region, citySlug, nameSlug, v.ID, "node", v.Lat, v.Lon, tags, city, dataTemplate)
-				}
-				// Cache all Nodes LatLon
-				m[v.ID] = LatLon{v.Lat, v.Lon}
-				nc++
-			case *osmpbf.Way:
-				// Process Way v.
-				tags := v.Tags
-				city := tags["addr:city"]
-				name := tags["name"]
-				shop := tags["shop"]
-				if city != "" && name != "" && shop != "" && n[v.ID] == "" {
-					citySlug := slug.MakeLang(city, "de")
-					nameSlug := slug.MakeLang(name, "de")
-					translatedShop := translateShop(shop)
-					shopSlug := slug.MakeLang(translatedShop, "de")
-					node := m[v.NodeIDs[0]] // Lookup coords of first childnode
-
-					// Cache cities LatLon
-					_, exists := p[citySlug]
-					if !exists {
-						p[citySlug] = LatLon{node.lat, node.lon}
-					}
-					// 1. content
-					err = os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
-					createIndexFile(region, citySlug, city, p[citySlug], indexTemplate)
-					err = os.MkdirAll(region+"/content/shops/"+shopSlug, 0755)
-					createShopFile(region, shopSlug, translatedShop, getIcon(shop), shopTemplate)
-					createElementFile(region, citySlug, nameSlug, name, translatedShop, mdTemplate)
-
-					// 2. data
-					err = os.MkdirAll(region+"/data/cities/"+citySlug, 0755)
-					createDataElementFile(region, citySlug, nameSlug, v.ID, "way", node.lat, node.lon, tags, city, dataTemplate)
-
-					// Ways might be twice
-					n[v.ID] = name
-				}
-				wc++
-			case *osmpbf.Relation:
-				// Process Relation v.
-				rc++
-			default:
-				log.Fatalf("unknown type %T\n", v)
+func (d *dataPrepare) ReadWay(w gosmparse.Way) {
+	tags := w.Tags
+	city := tags["addr:city"]
+	name := tags["name"]
+	shop := tags["shop"]
+	if city != "" && name != "" && shop != "" {
+		// This loop looks ugly
+		// but necessary because an individual NodeID might already be taken
+		for i := 0; i < 9; i++ {
+			_, found := wc.Load(w.NodeIDs[i])
+			if found {
+				continue
+			} else {
+				wc.Store(w.NodeIDs[i], w.ID)
+				break
 			}
 		}
 	}
-	fmt.Printf("Nodes: %d, Ways: %d, Relations: %d\n", nc, wc, rc)
 }
+
+func (d *dataHandler) ReadWay(w gosmparse.Way) {
+	tags := w.Tags
+	city := tags["addr:city"]
+	name := tags["name"]
+	shop := tags["shop"]
+	if city != "" && name != "" && shop != "" {
+		citySlug := slug.MakeLang(city, "de")
+		nameSlug := slug.MakeLang(name, "de")
+		translatedShop := translateShop(shop)
+		shopSlug := slug.MakeLang(translatedShop, "de")
+
+		// Lookup first childNodes coords
+		node, found := nc.Load(w.ID)
+		if !found || node == nil {
+			// Should never return, just for safety
+			return
+		}
+		// 1. content
+		os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
+		createIndexFile(region, citySlug, city, LatLon{node.(LatLon).lat, node.(LatLon).lon}, indexTemplate)
+		os.MkdirAll(region+"/content/shops/"+shopSlug, 0755)
+		createShopFile(region, shopSlug, translatedShop, getIcon(shop), shopTemplate)
+		createElementFile(region, citySlug, nameSlug, name, translatedShop, mdTemplate)
+
+		// 2. data
+		os.MkdirAll(region+"/data/cities/"+citySlug, 0755)
+		createDataElementFile(region, citySlug, nameSlug, w.ID, "way", node.(LatLon).lat, node.(LatLon).lon, tags, city, dataTemplate)
+	}
+}
+
+func (d *dataPrepare) ReadRelation(r gosmparse.Relation) {}
+func (d *dataHandler) ReadRelation(r gosmparse.Relation) {}
