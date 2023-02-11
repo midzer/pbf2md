@@ -25,119 +25,50 @@ func roundFloat(value float64, decimals float64) float64 {
 	return math.Round(value*factor)/factor
 }
 
-func createIndexFile(region string, citySlug string, city string, latLon LatLon, template *template.Template) {
-	indexFile := region + "/content/cities/" + citySlug + "/_index.md"
-	if _, err := os.Stat(indexFile); os.IsNotExist(err) {
-		data := map[string]interface{}{
-			"title":     city,
-			"url":       "/" + citySlug + "/",
-			"latitude":  roundFloat(latLon.lat, 3),
-			"longitude": roundFloat(latLon.lon, 3),
-		}
-		f, err := os.Create(indexFile)
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-		err = template.Execute(f, data)
-		if err != nil {
-			panic(err)
-		}
+func createFile (filePath string) *os.File {
+	f, err := os.OpenFile(filePath, os.O_WRONLY | os.O_CREATE | os.O_EXCL, 0644)
+	if err != nil {
+		f.Close()
+		return nil
 	}
+
+	return f
 }
 
-func createShopFile(region string, shopSlug string, shop string, icon string, template *template.Template) {
-	indexFile := region + "/content/shops/" + shopSlug + "/_index.md"
-	if _, err := os.Stat(indexFile); os.IsNotExist(err) {
-		data := map[string]interface{}{
-			"title": shop,
-			"url":   "/" + shopSlug + "/",
-			"icon":  icon,
-		}
-		f, err := os.Create(indexFile)
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-		err = template.Execute(f, data)
-		if err != nil {
-			panic(err)
-		}
+func writeData (file *os.File, template *template.Template, data map[string]interface{}) {
+	err := template.Execute(file, data)
+	if err != nil {
+		panic(err)
 	}
+	file.Close()
 }
 
-func createElementFile(region string, citySlug string, nameSlug string, name string, shop string, tags map[string]string, template *template.Template) {
-	elementFile := region + "/content/cities/" + citySlug + "/" + nameSlug + ".md"
-	if _, err := os.Stat(elementFile); !os.IsNotExist(err) {
-		nameSlug = fmt.Sprintf("%s-%s", nameSlug, slug.MakeLang(tags["addr:street"], "de"))
-		elementFile = region + "/content/cities/" + citySlug + "/" + nameSlug + ".md"
-		if _, err := os.Stat(elementFile); !os.IsNotExist(err) {
+func createIndexPath (region string, folder string, slug string) string {
+	return region + "/content/" + folder + "/" + slug + "/_index.md"
+}
+
+func createElementFile (region string, folder string, citySlug string, nameSlug string, streetSlug string, extension string) *os.File {
+	elementFile := region + "/" + folder + "/cities/" + citySlug + "/" + nameSlug + "." + extension
+	f := createFile(elementFile)
+	if f == nil {
+		nameSlug = fmt.Sprintf("%s-%s", nameSlug, streetSlug)
+		elementFile = region + "/" + folder + "/cities/" + citySlug + "/" + nameSlug + "." + extension
+		f = createFile(elementFile)
+		if f == nil {
 			re := regexp.MustCompile(`\d+$`)
 			nameSlug = fmt.Sprintf("%s-%d", nameSlug, 2)
 			for i := 3; i < 999; i++ {
-				elementFile = region + "/content/cities/" + citySlug + "/" + nameSlug + ".md"
-				if _, err = os.Stat(elementFile); os.IsNotExist(err) {
+				elementFile = region + "/" + folder + "/cities/" + citySlug + "/" + nameSlug + "." + extension
+				f = createFile(elementFile);
+				if f != nil {
 					break
 				}
 				nameSlug = re.ReplaceAllString(nameSlug, strconv.Itoa(i))
 			}
 		}
 	}
-	data := map[string]interface{}{
-		"title": strings.Replace(name, "\"", "", -1),
-		"url":   "/" + citySlug + "/" + nameSlug + "/",
-		"shop":  shop,
-	}
-	f, err := os.Create(elementFile)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	err = template.Execute(f, data)
-	if err != nil {
-		panic(err)
-	}
-}
 
-func createDataElementFile(region string, citySlug string, nameSlug string, id int64, elementType string, lat float64, lon float64, tags map[string]string, city string, template *template.Template) {
-	elementFile := region + "/data/cities/" + citySlug + "/" + nameSlug + ".yml"
-	if _, err := os.Stat(elementFile); !os.IsNotExist(err) {
-		nameSlug = fmt.Sprintf("%s-%s", nameSlug, slug.MakeLang(tags["addr:street"], "de"))
-		elementFile = region + "/data/cities/" + citySlug + "/" + nameSlug + ".yml"
-		if _, err := os.Stat(elementFile); !os.IsNotExist(err) {
-			re := regexp.MustCompile(`\d+$`)
-			nameSlug = fmt.Sprintf("%s-%d", nameSlug, 2)
-			for i := 3; i < 999; i++ {
-				elementFile = region + "/data/cities/" + citySlug + "/" + nameSlug + ".yml"
-				if _, err = os.Stat(elementFile); os.IsNotExist(err) {
-					break
-				}
-				nameSlug = re.ReplaceAllString(nameSlug, strconv.Itoa(i))
-			}
-		}
-	}
-	data := map[string]interface{}{
-		"id":            id,
-		"type":          elementType,
-		"latitude":      roundFloat(lat, 5),
-		"longitude":     roundFloat(lon, 5),
-		"postcode":      tags["addr:postcode"],
-		"city":          city,
-		"street":        tags["addr:street"],
-		"housenumber":   tags["addr:housenumber"],
-		"phone":         strings.Replace(tags["phone"], "\"", "", -1),
-		"opening_hours": strings.Replace(tags["opening_hours"], "\"", "", -1),
-		"website":       strings.Replace(tags["website"], "\"", "", -1),
-	}
-	f, err := os.Create(elementFile)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	err = template.Execute(f, data)
-	if err != nil {
-		panic(err)
-	}
+	return f
 }
 
 func Find(slice []string, val string) (int, bool) {
@@ -753,6 +684,7 @@ func (d *dataHandler) ReadNode(n gosmparse.Node) {
 		nameSlug := slug.MakeLang(name, "de")
 		translatedShop := translateShop(shop)
 		shopSlug := slug.MakeLang(translatedShop, "de")
+		streetSlug := slug.MakeLang(tags["addr:street"], "de")
 
 		// Exceptions: skip foreign cities
 		if citySlug == "s-heerenberg" {
@@ -760,15 +692,66 @@ func (d *dataHandler) ReadNode(n gosmparse.Node) {
 			return
 		}
 		// 1. content
-		os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
-		createIndexFile(region, citySlug, city, LatLon{n.Lat, n.Lon}, indexTemplate)
-		os.MkdirAll(region+"/content/shops/"+shopSlug, 0755)
-		createShopFile(region, shopSlug, translatedShop, getIcon(shop), shopTemplate)
-		createElementFile(region, citySlug, nameSlug, name, translatedShop, tags, mdTemplate)
+		err := os.MkdirAll(region + "/content/cities/" + citySlug, 0755)
+		if err != nil && !os.IsExist(err) {
+			panic(err)
+		}
+		f := createFile(createIndexPath(region, "cities", citySlug))
+		if f != nil {
+			data := map[string]interface{} {
+			"title":     city,
+			"url":       "/" + citySlug + "/",
+			"latitude":  roundFloat(n.Lat, 3),
+			"longitude": roundFloat(n.Lon, 3),
+		    }
+			writeData(f, indexTemplate, data)
+		}
+		err = os.MkdirAll(region + "/content/shops/" + shopSlug, 0755)
+		if err != nil && !os.IsExist(err) {
+			panic(err)
+		}
+		f = createFile(createIndexPath(region, "shops", shopSlug))
+		if f != nil {
+			data := map[string]interface{} {
+				"title": translatedShop,
+				"url":   "/" + shopSlug + "/",
+				"icon":  getIcon(shop),
+			}
+			writeData(f, shopTemplate, data)
+		}
+		f = createElementFile(region, "content", citySlug, nameSlug, streetSlug, "md")
+		if f != nil {
+			data := map[string]interface{} {
+				"title": strings.ReplaceAll(name, "\"", ""),
+				"url":   "/" + citySlug + "/" + nameSlug + "/",
+				"shop":  translatedShop,
+			}
+			writeData(f, mdTemplate, data)
+		}
 
 		// 2. data
-		os.MkdirAll(region+"/data/cities/"+citySlug, 0755)
-		createDataElementFile(region, citySlug, nameSlug, n.ID, "node", n.Lat, n.Lon, tags, city, dataTemplate)
+		err = os.MkdirAll(region + "/data/cities/" + citySlug, 0755)
+		if err != nil && !os.IsExist(err) {
+			panic(err)
+		}
+		f = createElementFile(region, "data", citySlug, nameSlug, streetSlug, "yml")
+		if f != nil {
+			data := map[string]interface{} {
+				"id":            n.ID,
+				"type":          "node",
+				"latitude":      roundFloat(n.Lat, 5),
+				"longitude":     roundFloat(n.Lon, 5),
+				"postcode":      tags["addr:postcode"],
+				"city":          city,
+				"street":        tags["addr:street"],
+				"housenumber":   tags["addr:housenumber"],
+				"phone":         strings.ReplaceAll(tags["phone"], "\"", ""),
+				"opening_hours": strings.ReplaceAll(tags["opening_hours"], "\"", ""),
+				"website":       strings.ReplaceAll(tags["website"], "\"", ""),
+			}
+			writeData(f, dataTemplate, data)
+		}
+
 	}
 	// Cache necessary Nodes LatLon
 	wID, found := wc.Load(n.ID)
@@ -807,23 +790,65 @@ func (d *dataHandler) ReadWay(w gosmparse.Way) {
 		nameSlug := slug.MakeLang(name, "de")
 		translatedShop := translateShop(shop)
 		shopSlug := slug.MakeLang(translatedShop, "de")
+		streetSlug := slug.MakeLang(tags["addr:street"], "de")
 
 		// Lookup first childNodes coords
 		node, found := nc.Load(w.ID)
 		if !found || node == nil {
-			// Should never return, just for safety
-			return
+			// Should never panic, just for safety
+			panic(found)
 		}
 		// 1. content
-		os.MkdirAll(region+"/content/cities/"+citySlug, 0755)
-		createIndexFile(region, citySlug, city, LatLon{node.(LatLon).lat, node.(LatLon).lon}, indexTemplate)
-		os.MkdirAll(region+"/content/shops/"+shopSlug, 0755)
-		createShopFile(region, shopSlug, translatedShop, getIcon(shop), shopTemplate)
-		createElementFile(region, citySlug, nameSlug, name, translatedShop, tags, mdTemplate)
+		os.MkdirAll(region + "/content/cities/" + citySlug, 0755)
+		f := createFile(createIndexPath(region, "cities", citySlug))
+		if f != nil {
+			data := map[string]interface{} {
+			"title":     city,
+			"url":       "/" + citySlug + "/",
+			"latitude":  roundFloat(node.(LatLon).lat, 3),
+			"longitude": roundFloat(node.(LatLon).lon, 3),
+		    }
+			writeData(f, indexTemplate, data)
+		}
+		os.MkdirAll(region + "/content/shops/" + shopSlug, 0755)
+		f = createFile(createIndexPath(region, "shops", shopSlug))
+		if f != nil {
+			data := map[string]interface{} {
+				"title": translatedShop,
+				"url":   "/" + shopSlug + "/",
+				"icon":  getIcon(shop),
+			}
+			writeData(f, shopTemplate, data)
+		}
+		f = createElementFile(region, "content", citySlug, nameSlug, streetSlug, "md")
+		if f != nil {
+			data := map[string]interface{} {
+				"title": strings.ReplaceAll(name, "\"", ""),
+				"url":   "/" + citySlug + "/" + nameSlug + "/",
+				"shop":  translatedShop,
+			}
+			writeData(f, mdTemplate, data)
+		}
 
 		// 2. data
-		os.MkdirAll(region+"/data/cities/"+citySlug, 0755)
-		createDataElementFile(region, citySlug, nameSlug, w.ID, "way", node.(LatLon).lat, node.(LatLon).lon, tags, city, dataTemplate)
+		os.MkdirAll(region + "/data/cities/" + citySlug, 0755)
+		f = createElementFile(region, "data", citySlug, nameSlug, streetSlug, "yml")
+		if f != nil {
+			data := map[string]interface{} {
+				"id":            w.ID,
+				"type":          "way",
+				"latitude":      roundFloat(node.(LatLon).lat, 5),
+				"longitude":     roundFloat(node.(LatLon).lon, 5),
+				"postcode":      tags["addr:postcode"],
+				"city":          city,
+				"street":        tags["addr:street"],
+				"housenumber":   tags["addr:housenumber"],
+				"phone":         strings.ReplaceAll(tags["phone"], "\"", ""),
+				"opening_hours": strings.ReplaceAll(tags["opening_hours"], "\"", ""),
+				"website":       strings.ReplaceAll(tags["website"], "\"", ""),
+			}
+			writeData(f, dataTemplate, data)
+		}
 	}
 }
 
