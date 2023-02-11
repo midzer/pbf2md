@@ -705,39 +705,35 @@ var (
 
 	// Create templates
 	indexTmpl = `---
-	title: {{ .title }}
-	url: {{ .url }}
-	latitude: {{ with .latitude }}{{ . }}{{ end }}
-	longitude: {{ with .longitude }}{{ . }}{{ end }}
-	---
-	`
+title: {{ .title }}
+url: {{ .url }}
+latitude: {{ with .latitude }}{{ . }}{{ end }}
+longitude: {{ with .longitude }}{{ . }}{{ end }}
+---`
 	indexTemplate = template.Must(template.New("index").Parse(indexTmpl))
 	shopTmpl = `---
-	title: {{ .title }}
-	url: {{ .url }}
-	icon: {{ .icon }}
-	---
-	`
+title: {{ .title }}
+url: {{ .url }}
+icon: {{ .icon }}
+---`
 	shopTemplate = template.Must(template.New("index").Parse(shopTmpl))
 	mdTmpl = `---
-	title: "{{ .title }}"
-	url: {{ .url }}
-	shop: {{ .shop }}
-	---
-	`
+title: "{{ .title }}"
+url: {{ .url }}
+shop: {{ .shop }}
+---`
 	mdTemplate = template.Must(template.New("markdown").Parse(mdTmpl))
 	dataTmpl = `id: {{ .id }}
-	type: {{ .type }}
-	latitude: {{ .latitude }}
-	longitude: {{ .longitude }}
-	postcode: "{{ .postcode }}"
-	city: {{ .city }}
-	street: "{{ .street }}"
-	housenumber: {{ .housenumber }}
-	phone: "{{ .phone }}"
-	opening_hours: "{{ .opening_hours }}"
-	website: "{{ .website }}"
-	`
+type: {{ .type }}
+latitude: {{ .latitude }}
+longitude: {{ .longitude }}
+postcode: "{{ .postcode }}"
+city: {{ .city }}
+street: "{{ .street }}"
+housenumber: {{ .housenumber }}
+phone: "{{ .phone }}"
+opening_hours: "{{ .opening_hours }}"
+website: "{{ .website }}"`
 	dataTemplate = template.Must(template.New("data").Parse(dataTmpl))
 )
 
