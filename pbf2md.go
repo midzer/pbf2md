@@ -51,8 +51,10 @@ func createElementFile (region string, folder string, citySlug string, nameSlug 
 	elementFile := region + "/" + folder + "/cities/" + citySlug + "/" + nameSlug + "." + extension
 	f := createFile(elementFile)
 	if f == nil {
-		nameSlug = fmt.Sprintf("%s-%s", nameSlug, streetSlug)
-		elementFile = region + "/" + folder + "/cities/" + citySlug + "/" + nameSlug + "." + extension
+		if streetSlug != "" {
+			nameSlug = fmt.Sprintf("%s-%s", nameSlug, streetSlug)
+		    elementFile = region + "/" + folder + "/cities/" + citySlug + "/" + nameSlug + "." + extension
+		}
 		f = createFile(elementFile)
 		if f == nil {
 			re := regexp.MustCompile(`\d+$`)
@@ -61,7 +63,7 @@ func createElementFile (region string, folder string, citySlug string, nameSlug 
 				elementFile = region + "/" + folder + "/cities/" + citySlug + "/" + nameSlug + "." + extension
 				f = createFile(elementFile);
 				if f != nil {
-					break
+					return f
 				}
 				nameSlug = re.ReplaceAllString(nameSlug, strconv.Itoa(i))
 			}
