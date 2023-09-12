@@ -8,433 +8,433 @@ func translateShop(shop string) string {
 	switch shopSplit[0] {
 	// Lebensmittel, Getränke
 	case "alcohol":
-		translatedShop = "Spirituosen"
+		translatedShop = "alcohol"
 	case "bakery":
-		translatedShop = "Bäckerei"
+		translatedShop = "panadería"
 	case "beverages":
-		translatedShop = "Getränke"
+		translatedShop = "bebidas"
 	case "brewing_supplies", "brewery":
-		translatedShop = "Brauerei"
+		translatedShop = "cervecería"
 	case "butcher":
-		translatedShop = "Metzgerei"
+		translatedShop = "carnicero"
 	case "cheese":
-		translatedShop = "Käse"
+		translatedShop = "queso"
 	case "chocolate":
-		translatedShop = "Schokolade"
+		translatedShop = "chocolate"
 	case "coffee", "coffee_roasting", "coffeemaker":
-		translatedShop = "Kaffee"
+		translatedShop = "café"
 	case "confectionery", "sweets", "cookies":
-		translatedShop = "Süßwaren"
+		translatedShop = "confitería"
 	case "convenience", "food", "grocery":
-		translatedShop = "Lebensmittel"
+		translatedShop = "comodidad"
 	case "deli":
-		translatedShop = "Feinkost"
+		translatedShop = "charcutería"
 	case "dairy":
-		translatedShop = "Milch"
+		translatedShop = "lácteos"
 	case "farm":
-		translatedShop = "Hofladen"
+		translatedShop = "granja"
 	case "frozen_food":
-		translatedShop = "Tiefkühl"
+		translatedShop = "alimentos congelados"
 	case "greengrocer", "vegetables":
-		translatedShop = "Gemüse & Obst"
+		translatedShop = "frutería"
 	case "health_food", "organic":
-		translatedShop = "Bioladen"
+		translatedShop = "alimentación sana"
 	case "ice_cream":
-		translatedShop = "Eisprodukte"
+		translatedShop = "helado"
 	case "pasta":
-		translatedShop = "Pasta"
+		translatedShop = "pasta"
 	case "pastry", "cake":
-		translatedShop = "Konditorei"
+		translatedShop = "pastelería"
 	case "seafood", "fishmonger":
-		translatedShop = "Fisch"
+		translatedShop = "marisco"
 	case "spices":
-		translatedShop = "Gewürze"
+		translatedShop = "especias"
 	case "tea":
-		translatedShop = "Tee"
+		translatedShop = "té"
 	case "wine", "winery":
-		translatedShop = "Wein"
+		translatedShop = "vino"
 	case "water":
-		translatedShop = "Wasser"
+		translatedShop = "agua"
 	// Warenhaus, Kaufhaus, Einkaufszentrum
 	case "department_store":
-		translatedShop = "Warenhaus"
+		translatedShop = "grandes almacenes"
 	case "general", "country_store":
-		translatedShop = "Dorfladen"
+		translatedShop = "tienda rural"
 	case "kiosk":
-		translatedShop = "Kiosk"
+		translatedShop = "quiosco"
 	case "mall":
-		translatedShop = "Einkaufszentrum"
+		translatedShop = "centro comercial"
 	case "supermarket":
-		translatedShop = "Supermarkt"
+		translatedShop = "supermercado"
 	case "wholesale":
-		translatedShop = "Großhandel"
+		translatedShop = "mayorista"
 	// Kleidung, Schuhe, Accessoires
 	case "baby_goods":
-		translatedShop = "Babysachen"
+		translatedShop = "artículos para bebés"
 	case "bag", "suitcases":
-		translatedShop = "Taschen & Koffer"
+		translatedShop = "bolsas y maletas"
 	case "boutique", "fashion", "fashion_accessories":
-		translatedShop = "Modehaus"
+		translatedShop = "tienda"
 	case "clothes":
-		translatedShop = "Kleidung"
+		translatedShop = "ropa"
 	case "fabric", "fabrics":
-		translatedShop = "Textil"
+		translatedShop = "tela"
 	case "jewelry", "jewellery", "gemstone", "gold", "gold_buyer":
-		translatedShop = "Schmuck"
+		translatedShop = "joyería"
 	case "leather":
-		translatedShop = "Leder"
+		translatedShop = "cuero"
 	case "sewing", "sewing_machines":
-		translatedShop = "Nähzubehör"
+		translatedShop = "coser"
 	case "shoes", "shoe_repair", "shoe_repairlocksmith":
-		translatedShop = "Schuhe"
+		translatedShop = "zapatos"
 	case "tailor":
-		translatedShop = "Schneiderei"
+		translatedShop = "sastre"
 	case "watches", "clocks", "watchmaker":
-		translatedShop = "Uhren"
+		translatedShop = "relojes"
 	case "wool":
-		translatedShop = "Wolle"
+		translatedShop = "lana"
 	// Discounter, Wohltätigkeit
 	case "charity", "second_hand":
-		translatedShop = "Gebrauchtwaren"
+		translatedShop = "caridad"
 	case "variety_store":
-		translatedShop = "Kramladen"
+		translatedShop = "tienda de variedades"
 	// Gesundheit und Schönheitspflege
 	case "beauty", "cosmetics", "decorative_cosmetics", "nail_salon", "wellness", "cosmetic":
-		translatedShop = "Kosmetik"
+		translatedShop = "cosméticos"
 	case "chemist":
-		translatedShop = "Drogerie"
+		translatedShop = "farmacia"
 	case "erotic":
-		translatedShop = "Erotik"
+		translatedShop = "erótico"
 	case "hairdresser":
-		translatedShop = "Friseur"
+		translatedShop = "peluquería"
 	case "hairdresser_supply", "combs":
-		translatedShop = "Friseurbedarf"
+		translatedShop = "suministros de peluquería"
 	case "hearing_aids":
-		translatedShop = "Hörgeräte"
+		translatedShop = "audífonos"
 	case "herbalist":
-		translatedShop = "Kräuter"
+		translatedShop = "herbolario"
 	case "massage":
-		translatedShop = "Massage"
+		translatedShop = "masaje"
 	case "medical_supply", "medical", "orthopedic", "orthopedics", "sanitary":
-		translatedShop = "Sanitätshaus"
+		translatedShop = "suministros médicos"
 	case "nutrition_supplements":
-		translatedShop = "Nahrungsergänzung"
+		translatedShop = "suplementos nutricionales"
 	case "optician", "eyeglasses":
-		translatedShop = "Optiker"
+		translatedShop = "óptico"
 	case "perfumery":
-		translatedShop = "Parfümerie"
+		translatedShop = "perfumería"
 	case "tattoo":
-		translatedShop = "Tattoo"
+		translatedShop = "tatuaje"
 	// Do-it-yourself, Haushaltswaren, Baustoffe, Gartenprodukte
 	case "agrarian", "agricultural":
-		translatedShop = "Landwirtschaftlich"
+		translatedShop = "agraria"
 	case "appliance":
-		translatedShop = "Haushaltsgeräte"
+		translatedShop = "aparato"
 	case "bathroom_furnishing", "bathroom", "bath":
-		translatedShop = "Badezimmer"
+		translatedShop = "cuarto de baño"
 	case "doityourself":
-		translatedShop = "Baumarkt"
+		translatedShop = "hágalo usted mismo"
 	case "electrical", "electric":
-		translatedShop = "Elektrisch"
+		translatedShop = "eléctrico"
 	case "energy", "battery":
-		translatedShop = "Energie"
+		translatedShop = "energía"
 	case "fireplace", "furnace", "oven":
-		translatedShop = "Kamine & Öfen"
+		translatedShop = "horno y estufa"
 	case "florist":
-		translatedShop = "Blumen"
+		translatedShop = "floristería"
 	case "garden_centre":
-		translatedShop = "Garten-Center"
+		translatedShop = "centro de jardinería"
 	case "garden_furniture":
-		translatedShop = "Gartenmöbel"
+		translatedShop = "muebles de jardín"
 	case "gas":
-		translatedShop = "Gasflaschen"
+		translatedShop = "gas"
 	case "glaziery":
-		translatedShop = "Glaserei"
+		translatedShop = "vidriería"
 	case "hardware":
-		translatedShop = "Eisenwaren"
+		translatedShop = "hardware"
 	case "houseware", "household", "house":
-		translatedShop = "Haushaltsartikel"
+		translatedShop = "menaje del hogar"
 	case "locksmith", "keys":
-		translatedShop = "Schlüsseldienst"
+		translatedShop = "cerrajero"
 	case "paint", "paintings", "colors", "painter":
-		translatedShop = "Farben"
+		translatedShop = "pintura"
 	case "security":
-		translatedShop = "Sicherheit"
+		translatedShop = "seguridad"
 	case "trade":
-		translatedShop = "Baustoffe"
+		translatedShop = "comercio"
 	// Möbel und Innenausstattung
 	case "antiques":
-		translatedShop = "Antiquitäten"
+		translatedShop = "antigüedades"
 	case "bed":
-		translatedShop = "Betten"
+		translatedShop = "cama"
 	case "candles":
-		translatedShop = "Kerzen"
+		translatedShop = "velas"
 	case "carpet":
-		translatedShop = "Teppiche"
+		translatedShop = "alfombra"
 	case "curtain":
-		translatedShop = "Gardinen"
+		translatedShop = "cortina"
 	case "doors":
-		translatedShop = "Türen"
+		translatedShop = "puertas"
 	case "flooring", "parquet":
-		translatedShop = "Fußböden"
+		translatedShop = "suelos"
 	case "furniture":
-		translatedShop = "Möbel"
+		translatedShop = "muebles"
 	case "interior_decoration", "interior", "decoration", "wallpaper", "interior_store":
-		translatedShop = "Raumausstattung"
+		translatedShop = "decoración interior"
 	case "kitchen", "kitchen_appliances", "kitchenware", "kitchen_equipment", "cooking", "crockery", "tableware", "ceramics":
-		translatedShop = "Küchen"
+		translatedShop = "cocina"
 	case "lamps", "lighting":
-		translatedShop = "Lampen"
+		translatedShop = "lámparas"
 	case "tiles", "tile", "tiling":
-		translatedShop = "Fliesen"
+		translatedShop = "baldosas"
 	case "window_blind", "shutter", "shutters":
-		translatedShop = "Jalousien"
+		translatedShop = "persianas"
 	// Elektronik
 	case "computer":
-		translatedShop = "Computer"
+		translatedShop = "ordenador"
 	case "robot":
-		translatedShop = "Roboter"
+		translatedShop = "robot"
 	case "electronics", "electronics_repair", "electro":
-		translatedShop = "Elektronik"
+		translatedShop = "electrónica"
 	case "hifi":
-		translatedShop = "Hifi"
+		translatedShop = "hifi"
 	case "mobile_phone", "telephone", "phone", "communication", "telecommunication":
-		translatedShop = "Handy"
+		translatedShop = "teléfono móvil"
 	case "radiotechnics":
-		translatedShop = "Radiotechnik"
+		translatedShop = "radiotecnia"
 	case "vacuum_cleaner":
-		translatedShop = "Staubsauger"
+		translatedShop = "aspiradora"
 	// Outdoor und Sport, Fahrzeuge
 	case "atv":
-		translatedShop = "Quad"
+		translatedShop = "atv"
 	case "bicycle", "bike_repair":
-		translatedShop = "Fahrrad"
+		translatedShop = "bicicleta"
 	case "boat", "yachts":
-		translatedShop = "Boot"
+		translatedShop = "barco"
 	case "car":
-		translatedShop = "Autohaus"
+		translatedShop = "coche"
 	case "car_repair":
-		translatedShop = "Autowerkstatt"
+		translatedShop = "reparación de automóviles"
 	case "car_parts":
-		translatedShop = "Autoteile"
+		translatedShop = "piezas de automóviles"
 	case "caravan", "caravaning":
-		translatedShop = "Wohnwagen"
+		translatedShop = "caravana"
 	case "fuel":
-		translatedShop = "Treibstoff"
+		translatedShop = "combustible"
 	case "fishing", "fishing_gear":
-		translatedShop = "Angeln"
+		translatedShop = "pesca"
 	case "free_flying":
-		translatedShop = "Freeflying"
+		translatedShop = "vuelo libre"
 	case "golf":
-		translatedShop = "Golf"
+		translatedShop = "golf"
 	case "hunting":
-		translatedShop = "Jagd"
+		translatedShop = "caza"
 	case "jetski":
-		translatedShop = "Jetski"
+		translatedShop = "moto acuática"
 	case "military_surplus", "military":
-		translatedShop = "Militär"
+		translatedShop = "militar"
 	case "motorcycle", "motorcycle_repair":
-		translatedShop = "Motorrad"
+		translatedShop = "motocicleta"
 	case "outdoor":
-		translatedShop = "Outdoor"
+		translatedShop = "exterior"
 	case "scuba_diving":
-		translatedShop = "Tauchen"
+		translatedShop = "buceo"
 	case "ski":
-		translatedShop = "Ski"
+		translatedShop = "esquiar"
 	case "snowmobile":
-		translatedShop = "Schneemobil"
+		translatedShop = "moto de nieve"
 	case "sports", "water_sports", "hobby":
-		translatedShop = "Sport"
+		translatedShop = "deportes"
 	case "swimming_pool":
-		translatedShop = "Pool"
+		translatedShop = "piscina"
 	case "trailer", "car_trailer":
-		translatedShop = "Anhänger"
+		translatedShop = "remolque"
 	case "tyres":
-		translatedShop = "Reifen"
+		translatedShop = "neumáticos"
 	// Kunst, Musik, Hobbys
 	case "art", "arts", "artwork":
-		translatedShop = "Kunst"
+		translatedShop = "arte"
 	case "collector", "coins", "comics", "stamps":
-		translatedShop = "Sammler"
+		translatedShop = "colector"
 	case "craft":
-		translatedShop = "Basteln"
+		translatedShop = "artesanía"
 	case "frame", "picture_frames":
-		translatedShop = "Rahmen"
+		translatedShop = "marco"
 	case "games":
-		translatedShop = "Spiele"
+		translatedShop = "juegos"
 	case "model", "modelrailway":
-		translatedShop = "Modellbau"
+		translatedShop = "modelo"
 	case "music":
-		translatedShop = "Musik"
+		translatedShop = "música"
 	case "musical_instrument", "woodwind_repair":
-		translatedShop = "Instrumente"
+		translatedShop = "instrumento musical"
 	case "photo", "photo_studio", "photographic_studio", "photographer":
-		translatedShop = "Foto"
+		translatedShop = "foto"
 	case "camera":
-		translatedShop = "Kamera"
+		translatedShop = "cámara"
 	case "trophy":
-		translatedShop = "Pokal"
+		translatedShop = "trofeo"
 	case "video":
-		translatedShop = "Videothek"
+		translatedShop = "vídeo"
 	case "video_games":
-		translatedShop = "Videospiele"
+		translatedShop = "videojuegos"
 	// Schreibwaren, Geschenke, Bücher und Zeitungen
 	case "anime", "japan":
-		translatedShop = "Anime"
+		translatedShop = "anime"
 	case "books", "book_restoration":
-		translatedShop = "Bücher"
+		translatedShop = "libros"
 	case "gift":
-		translatedShop = "Andenken"
+		translatedShop = "regalo"
 	case "lottery":
-		translatedShop = "Lotterie"
+		translatedShop = "lotería"
 	case "newsagent":
-		translatedShop = "Zeitungen"
+		translatedShop = "quiosco"
 	case "stationary":
-		translatedShop = "Schreibwaren"
+		translatedShop = "estacionario"
 	case "ticket", "tickets":
-		translatedShop = "Tickets"
+		translatedShop = "entradas"
 	// Andere
 	case "bookmaker":
-		translatedShop = "Wettbüro"
+		translatedShop = "corredor de apuestas"
 	case "cannabis", "growshop":
-		translatedShop = "Hanf"
+		translatedShop = "cannabis"
 	case "copyshop", "printing", "print_shop", "printer_ink", "ink_cartridges", "printer", "printers", "paper", "printshop", "printery":
-		translatedShop = "Kopieren"
+		translatedShop = "copyshop"
 	case "e-cigarette", "vape":
-		translatedShop = "E-Zigaretten"
+		translatedShop = "cigarrillo electrónico"
 	case "funeral_directors":
-		translatedShop = "Bestattungen"
+		translatedShop = "directores de funerarias"
 	case "laundry", "rotary_iron", "ironing", "dry_cleaning":
-		translatedShop = "Wäscherei"
+		translatedShop = "lavandería"
 	case "party":
-		translatedShop = "Partyzubehör"
+		translatedShop = "fiesta"
 	case "pawnbroker", "money_lender":
-		translatedShop = "Leiher"
+		translatedShop = "prestamista"
 	case "pet":
-		translatedShop = "Tiere"
+		translatedShop = "mascotas"
 	case "pet_grooming", "dog_beauty", "dog_hairdresser":
-		translatedShop = "Tiersalon"
+		translatedShop = "peluquería canina"
 	case "pest_control":
-		translatedShop = "Schädlingsbekämpfung"
+		translatedShop = "control de plagas"
 	case "pyrotechnics":
-		translatedShop = "Pyrotechnik"
+		translatedShop = "pirotecnia"
 	case "religion":
-		translatedShop = "Religion"
+		translatedShop = "religión"
 	case "storage_rental", "rental":
-		translatedShop = "Mieten"
+		translatedShop = "alquiler"
 	case "tobacco", "smokers":
-		translatedShop = "Tabak"
+		translatedShop = "tabaco"
 	case "toys":
-		translatedShop = "Spielzeug"
+		translatedShop = "juguetes"
 	case "travel_agency":
-		translatedShop = "Reisebüro"
+		translatedShop = "agencia de viajes"
 	case "vacant":
-		translatedShop = "Leerstehend"
+		translatedShop = "vacante"
 	case "weapons", "guns", "arms", "knives", "knife":
-		translatedShop = "Waffen"
+		translatedShop = "armas"
 	case "outpost":
-		translatedShop = "Außenstelle"
+		translatedShop = "puesto de avanzada"
 	// Benutzerdefiniert
 	case "apiary", "beekeeping", "beekeepers_need", "honey", "beekeeper":
-		translatedShop = "Imkerei"
+		translatedShop = "colmenar"
 	case "auction_house", "auctioneer", "auction":
-		translatedShop = "Auktionshaus"
+		translatedShop = "casa de subastas"
 	case "car_accessories", "child_safety_seats":
-		translatedShop = "Autozubehör"
+		translatedShop = "accesorios para coches"
 	case "car_service":
-		translatedShop = "Autoservice"
+		translatedShop = "servicio de coches"
 	case "caretaker", "building_cleaner":
-		translatedShop = "Hausmeister"
+		translatedShop = "conserje"
 	case "carpenter", "cabinet_maker", "carpentry":
-		translatedShop = "Schreinerei"
+		translatedShop = "carpintero"
 	case "casino", "gambling":
-		translatedShop = "Spielkasino"
+		translatedShop = "casino"
 	case "catalogue":
-		translatedShop = "Katalog"
+		translatedShop = "catálogo"
 	case "catering", "catering_supplies":
-		translatedShop = "Catering"
+		translatedShop = "catering"
 	case "equestrian", "horse_equipment", "horse":
-		translatedShop = "Pferde"
+		translatedShop = "ecuestre"
 	case "esoteric":
-		translatedShop = "Esoterik"
+		translatedShop = "esotérico"
 	case "estate_agent":
-		translatedShop = "Immobilien"
+		translatedShop = "agente inmobiliario"
 	case "event_service":
-		translatedShop = "Veranstaltungen"
+		translatedShop = "servicio de eventos"
 	case "fanshop":
-		translatedShop = "Fanshop"
+		translatedShop = "fanshop"
 	case "fitness_equipment":
-		translatedShop = "Fitness"
+		translatedShop = "equipos de fitness"
 	case "flour":
-		translatedShop = "Mehl"
+		translatedShop = "harina"
 	case "glass":
-		translatedShop = "Glas"
+		translatedShop = "vidrio"
 	case "garden_service":
-		translatedShop = "Gartendienst"
+		translatedShop = "servicio de jardinería"
 	case "garden_machinery", "gardening_tools", "lawn_mower":
-		translatedShop = "Gartenmaschinen"
+		translatedShop = "maquinaria de jardinería"
 	case "grill", "bbq":
-		translatedShop = "Grillen"
+		translatedShop = "parrilla"
 	case "grinding":
-		translatedShop = "Schleifen"
+		translatedShop = "molienda"
 	case "groundskeeping":
-		translatedShop = "Platzpflege"
+		translatedShop = "jardinería"
 	case "hat", "hats":
-		translatedShop = "Hüte"
+		translatedShop = "sombreros"
 	case "health":
-		translatedShop = "Gesundheit"
+		translatedShop = "salud"
 	case "heating_system", "heater", "heating":
-		translatedShop = "Heizungsanlagen"
+		translatedShop = "sistema de calefacción"
 	case "hookah", "shisha":
-		translatedShop = "Wasserpfeife"
+		translatedShop = "shisha"
 	case "hypnotism":
-		translatedShop = "Hypnose"
+		translatedShop = "hipnotismo"
 	case "internet_service_provider":
-		translatedShop = "Internetanbieter"
+		translatedShop = "proveedor de servicios de internet"
 	case "joiner":
-		translatedShop = "Tischlerei"
+		translatedShop = "carpintero"
 	case "kids_furnishing":
-		translatedShop = "Kinder"
+		translatedShop = "mobiliario infantil"
 	case "furs":
-		translatedShop = "Pelze"
+		translatedShop = "pieles"
 	case "lettering", "license_plate", "license_plates", "number_plate", "sign_make", "signs":
-		translatedShop = "Beschriftungen"
+		translatedShop = "rotulación"
 	case "locksmithery", "metalworker", "metalwork", "metalworking":
-		translatedShop = "Schlosserei"
+		translatedShop = "cerrajería"
 	case "machinery", "vehicle", "vehicles", "forklift", "agricultural_machinery", "industrial", "machines":
-		translatedShop = "Maschinen"
+		translatedShop = "maquinaria"
 	case "office_supplies", "office", "stationery":
-		translatedShop = "Schreibwaren"
+		translatedShop = "material de oficina"
 	case "pet_food", "fodder":
-		translatedShop = "Tierfutter"
+		translatedShop = "alimentos para mascotas"
 	case "plumber", "plumbing_business":
-		translatedShop = "Klempner"
+		translatedShop = "fontanero"
 	case "piercing":
-		translatedShop = "Piercing"
+		translatedShop = "perforación"
 	case "pottery":
-		translatedShop = "Töpferei"
+		translatedShop = "cerámica"
 	case "ship_chandler":
-		translatedShop = "Schiffe"
+		translatedShop = "proveedor de buques"
 	case "software":
-		translatedShop = "Software"
+		translatedShop = "software"
 	case "solarium", "sunstudio":
-		translatedShop = "Solarium"
+		translatedShop = "solarium"
 	case "stones", "tombstone", "tombstones", "gravestones":
-		translatedShop = "Steine"
+		translatedShop = "piedras"
 	case "tanning":
-		translatedShop = "Gerberei"
+		translatedShop = "bronceado"
 	case "tools", "screws", "tool_hire":
-		translatedShop = "Werkzeuge"
+		translatedShop = "herramientas"
 	case "wedding_gown", "wedding":
-		translatedShop = "Brautkleider"
+		translatedShop = "vestido de novia"
 	case "whirlpool", "pool":
-		translatedShop = "Pool"
+		translatedShop = "piscina"
 	case "wood", "timber", "sawmill":
-		translatedShop = "Holz"
+		translatedShop = "madera"
 	case "worldshop", "one_world", "afro", "oneworld":
-		translatedShop = "Weltladen"
+		translatedShop = "worldshop"
 	default:
-		translatedShop = "Allgemein"
+		translatedShop = "general"
 		//fmt.Println("unknown shop:", shop)
 	}
 	return translatedShop
