@@ -47,7 +47,7 @@ func createIndexPath (region string, folder string, slug string) string {
 	return region + "/content/" + folder + "/" + slug + "/_index.md"
 }
 
-func createElementFile (region string, folder string, citySlug string, nameSlug string, streetSlug string, extension string) *os.File {
+func createElementFile (region string, folder string, citySlug string, nameSlug string, streetSlug string, extension string) (*os.File, string) {
 	elementFile := region + "/" + folder + "/cities/" + citySlug + "/" + nameSlug + "." + extension
 	f := createFile(elementFile)
 	if f == nil {
@@ -63,14 +63,14 @@ func createElementFile (region string, folder string, citySlug string, nameSlug 
 				elementFile = region + "/" + folder + "/cities/" + citySlug + "/" + nameSlug + "." + extension
 				f = createFile(elementFile);
 				if f != nil {
-					return f
+					return f, nameSlug
 				}
 				nameSlug = re.ReplaceAllString(nameSlug, strconv.Itoa(i))
 			}
 		}
 	}
 
-	return f
+	return f, nameSlug
 }
 
 type dataPrepare struct {
@@ -188,7 +188,7 @@ func (d *dataHandler) ReadNode(n gosmparse.Node) {
 			}
 			writeData(f, shopTemplate, data)
 		}
-		f = createElementFile(region, "content", citySlug, nameSlug, streetSlug, "md")
+		f, nameSlug = createElementFile(region, "content", citySlug, nameSlug, streetSlug, "md")
 		if f != nil {
 			data := map[string]interface{} {
 				"title": strings.ReplaceAll(name, "\"", ""),
@@ -203,7 +203,7 @@ func (d *dataHandler) ReadNode(n gosmparse.Node) {
 		if err != nil && !os.IsExist(err) {
 			panic(err)
 		}
-		f = createElementFile(region, "data", citySlug, nameSlug, streetSlug, "yml")
+		f, nameSlug = createElementFile(region, "data", citySlug, nameSlug, streetSlug, "yml")
 		if f != nil {
 			data := map[string]interface{} {
 				"id":            n.ID,
@@ -289,7 +289,7 @@ func (d *dataHandler) ReadWay(w gosmparse.Way) {
 			}
 			writeData(f, shopTemplate, data)
 		}
-		f = createElementFile(region, "content", citySlug, nameSlug, streetSlug, "md")
+		f, nameSlug = createElementFile(region, "content", citySlug, nameSlug, streetSlug, "md")
 		if f != nil {
 			data := map[string]interface{} {
 				"title": strings.ReplaceAll(name, "\"", ""),
@@ -301,7 +301,7 @@ func (d *dataHandler) ReadWay(w gosmparse.Way) {
 
 		// 2. data
 		os.MkdirAll(region + "/data/cities/" + citySlug, 0755)
-		f = createElementFile(region, "data", citySlug, nameSlug, streetSlug, "yml")
+		f, nameSlug = createElementFile(region, "data", citySlug, nameSlug, streetSlug, "yml")
 		if f != nil {
 			data := map[string]interface{} {
 				"id":            w.ID,
