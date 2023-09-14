@@ -149,11 +149,11 @@ func (d *dataHandler) ReadNode(n gosmparse.Node) {
 	name := tags["name"]
 	shop := tags["shop"]
 	if city != "" && name != "" && shop != "" {
-		citySlug := slug.MakeLang(city, "de")
-		nameSlug := slug.MakeLang(name, "de")
+		citySlug := slug.MakeLang(city, "es")
+		nameSlug := slug.MakeLang(name, "es")
 		translatedShop := translateShop(shop)
-		shopSlug := slug.MakeLang(translatedShop, "de")
-		streetSlug := slug.MakeLang(tags["addr:street"], "de")
+		shopSlug := slug.MakeLang(translatedShop, "es")
+		streetSlug := slug.MakeLang(tags["addr:street"], "es")
 
 		// Exceptions: skip foreign cities
 		if citySlug == "s-heerenberg" {
@@ -255,11 +255,11 @@ func (d *dataHandler) ReadWay(w gosmparse.Way) {
 	name := tags["name"]
 	shop := tags["shop"]
 	if city != "" && name != "" && shop != "" {
-		citySlug := slug.MakeLang(city, "de")
-		nameSlug := slug.MakeLang(name, "de")
+		citySlug := slug.MakeLang(city, "es")
+		nameSlug := slug.MakeLang(name, "es")
 		translatedShop := translateShop(shop)
-		shopSlug := slug.MakeLang(translatedShop, "de")
-		streetSlug := slug.MakeLang(tags["addr:street"], "de")
+		shopSlug := slug.MakeLang(translatedShop, "es")
+		streetSlug := slug.MakeLang(tags["addr:street"], "es")
 
 		// Lookup first childNodes coords
 		node, found := nc.Load(w.ID)
