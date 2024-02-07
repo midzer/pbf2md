@@ -3,16 +3,15 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/gosimple/slug"
-	"github.com/qedus/osmpbf"
+	"github.com/thomersch/gosmparse"
 )
 
 type LatLon struct {
@@ -107,35 +106,54 @@ func createDataElementFile(citySlug string, nameSlug string, id int64, lat float
 	f.Close()
 }
 
+type dataPrepare struct {
+	Nodes     *uint64
+	Ways      *uint64
+}
+
+type dataHandler struct {
+	Nodes     *uint64
+	Ways      *uint64
+}
+
 func main() {
 	regions := []string{"austria", "baden-wuerttemberg", "bayern", "brandenburg", "bremen", "hamburg", "hessen", "mecklenburg-vorpommern", "niedersachsen", "nordrhein-westfalen", "rheinland-pfalz", "saarland", "sachsen-anhalt", "sachsen", "schleswig-holstein", "switzerland", "thueringen"}
-	for _, r := range regions {
-		f, err := os.Open(r + "-latest.osm.pbf")
+	for _, region := range regions {
+		r, err := os.Open(region + "-latest.osm.pbf")
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
-		defer f.Close()
+		dec := gosmparse.NewDecoder(r)
+		err = dec.Parse(&dataPrepare{})
+		if err != nil {
+			panic(err)
+		}
+		r.Seek(0, io.SeekStart)
+		err = dec.Parse(&dataHandler{})
+		if err != nil {
+			panic(err)
+		}
+	}
+}
 
-		d := osmpbf.NewDecoder(f)
+// Globals
+var (
+	region string
+	nc sync.Map
+	wc sync.Map
 
-		// Cache nodes, ways and cities
-		m := make(map[int64]LatLon)
-		n := make(map[int64]string)
-
-		// Create templates
-		indexTmpl := `---
+	// Create templates
+	indexTmpl = `---
 title: {{ .title }}
 url: {{ .url }}
----
-`
-		indexTemplate := template.Must(template.New("index").Parse(indexTmpl))
-		mdTmpl := `---
+---	`
+	indexTemplate = template.Must(template.New("index").Parse(indexTmpl))
+	mdTmpl = `---
 title: "{{ .title }}"
 url: {{ .url }}
----
-`
-		mdTemplate := template.Must(template.New("markdown").Parse(mdTmpl))
-		dataTmpl := `id: {{ .id }}
+---`
+	mdTemplate = template.Must(template.New("markdown").Parse(mdTmpl))
+	dataTmpl = `id: {{ .id }}
 latitude: {{ .latitude }}
 longitude: {{ .longitude }}
 postcode: "{{ .postcode }}"
@@ -144,82 +162,83 @@ street: "{{ .street }}"
 housenumber: {{ .housenumber }}
 phone: "{{ .phone }}"
 opening_hours: "{{ .opening_hours }}"
-website: "{{ .website }}"
-`
-		dataTemplate := template.Must(template.New("data").Parse(dataTmpl))
+website: "{{ .website }}"`
+	dataTemplate = template.Must(template.New("data").Parse(dataTmpl))
+)
 
-		// use more memory from the start, it is faster
-		d.SetBufferSize(osmpbf.MaxBlobSize)
+func (d *dataPrepare) ReadNode(n gosmparse.Node) {}
 
-		// start decoding with several goroutines, it is faster
-		err = d.Start(runtime.GOMAXPROCS(-1))
-		if err != nil {
-			log.Fatal(err)
-		}
+func (d *dataHandler) ReadNode(n gosmparse.Node) {
+	tags := n.Tags
+	city := tags["addr:city"]
+	name := tags["name"]
+	cuisine := tags["cuisine"]
+	if city != "" && name != "" && (strings.Contains(cuisine, "turkish") || strings.Contains(cuisine, "kebab")) {
+		citySlug := slug.MakeLang(city, "de")
+		nameSlug := slug.MakeLang(name, "de")
 
-		var nc, wc, rc uint64
-		for {
-			if v, err := d.Decode(); err == io.EOF {
-				break
-			} else if err != nil {
-				log.Fatal(err)
-			} else {
-				switch v := v.(type) {
-				case *osmpbf.Node:
-					// Process Node v.
-					tags := v.Tags
-					city := tags["addr:city"]
-					name := tags["name"]
-					cuisine := tags["cuisine"]
-					if city != "" && name != "" && (strings.Contains(cuisine, "turkish") || strings.Contains(cuisine, "kebab")) {
-						citySlug := slug.MakeLang(city, "de")
-						nameSlug := slug.MakeLang(name, "de")
+		// 1. content
+		os.MkdirAll("content/cities/"+citySlug, 0755)
+		createIndexFile(citySlug, city, indexTemplate)
+		createElementFile(citySlug, nameSlug, name, mdTemplate)
 
-						// 1. content
-						err = os.MkdirAll("content/cities/"+citySlug, 0755)
-						createIndexFile(citySlug, city, indexTemplate)
-						createElementFile(citySlug, nameSlug, name, mdTemplate)
-
-						// 2. data
-						err = os.MkdirAll("data/cities/"+citySlug, 0755)
-						createDataElementFile(citySlug, nameSlug, v.ID, v.Lat, v.Lon, tags, city, dataTemplate)
-					}
-					// Cache all Nodes LatLon
-					m[v.ID] = LatLon{v.Lat, v.Lon}
-					nc++
-				case *osmpbf.Way:
-					// Process Way v.
-					tags := v.Tags
-					city := tags["addr:city"]
-					name := tags["name"]
-					cuisine := tags["cuisine"]
-					if city != "" && name != "" && n[v.ID] != name && (strings.Contains(cuisine, "turkish") || strings.Contains(cuisine, "kebab")) {
-						citySlug := slug.MakeLang(city, "de")
-						nameSlug := slug.MakeLang(name, "de")
-
-						// 1. content
-						err = os.MkdirAll("content/cities/"+citySlug, 0755)
-						createIndexFile(citySlug, city, indexTemplate)
-						createElementFile(citySlug, nameSlug, name, mdTemplate)
-
-						// 2. data
-						err = os.MkdirAll("data/cities/"+citySlug, 0755)
-						node := m[v.NodeIDs[0]] // Lookup coords of first childnode
-						createDataElementFile(citySlug, nameSlug, v.ID, node.lat, node.lon, tags, city, dataTemplate)
-
-						// Ways might be twice
-						n[v.ID] = name
-					}
-					wc++
-				case *osmpbf.Relation:
-					// Process Relation v.
-					rc++
-				default:
-					log.Fatalf("unknown type %T\n", v)
-				}
-			}
-		}
-
-		fmt.Printf("Nodes: %d, Ways: %d, Relations: %d\n", nc, wc, rc)
+		// 2. data
+		os.MkdirAll("data/cities/"+citySlug, 0755)
+		createDataElementFile(citySlug, nameSlug, n.ID, n.Lat, n.Lon, tags, city, dataTemplate)
+	}
+	// Cache necessary Nodes LatLon
+	wID, found := wc.Load(n.ID)
+	if found {
+		nc.Store(wID, LatLon{n.Lat, n.Lon})
 	}
 }
+
+func (d *dataPrepare) ReadWay(w gosmparse.Way) {
+	tags := w.Tags
+	city := tags["addr:city"]
+	name := tags["name"]
+	cuisine := tags["cuisine"]
+	if city != "" && name != "" && (strings.Contains(cuisine, "turkish") || strings.Contains(cuisine, "kebab")) {
+		// This loop looks ugly
+		// but necessary because an individual NodeID might already be taken
+		for i := 0; i < 9; i++ {
+			_, found := wc.Load(w.NodeIDs[i])
+			if found {
+				continue
+			} else {
+				wc.Store(w.NodeIDs[i], w.ID)
+				break
+			}
+		}
+	}
+}
+
+func (d *dataHandler) ReadWay(w gosmparse.Way) {
+	tags := w.Tags
+	city := tags["addr:city"]
+	name := tags["name"]
+	cuisine := tags["cuisine"]
+	if city != "" && name != "" && (strings.Contains(cuisine, "turkish") || strings.Contains(cuisine, "kebab")) {
+		citySlug := slug.MakeLang(city, "de")
+		nameSlug := slug.MakeLang(name, "de")
+
+		// Lookup first childNodes coords
+		node, found := nc.Load(w.ID)
+		if !found || node == nil {
+			// Should never panic, just for safety
+			panic(found)
+		}
+
+		// 1. content
+		os.MkdirAll("content/cities/"+citySlug, 0755)
+		createIndexFile(citySlug, city, indexTemplate)
+		createElementFile(citySlug, nameSlug, name, mdTemplate)
+
+		// 2. data
+		os.MkdirAll("data/cities/"+citySlug, 0755)
+		createDataElementFile(citySlug, nameSlug, w.ID, node.(LatLon).lat, node.(LatLon).lon, tags, city, dataTemplate)
+	}
+}
+
+func (d *dataPrepare) ReadRelation(r gosmparse.Relation) {}
+func (d *dataHandler) ReadRelation(r gosmparse.Relation) {}
